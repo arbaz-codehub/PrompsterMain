@@ -1,0 +1,409 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import ImageCarousel from '../../components/ImageCarousel.astro';
+import CopyButton from '../../components/CopyButton.astro';
+import TagBadge from '../../components/TagBadge.astro';
+import PromptCard from '../../components/PromptCard.astro';
+import { getPromptBySlug, getPrompts } from '../../lib/prompts';
+
+const { slug } = Astro.params;
+const prompt = slug ? await getPromptBySlug(slug) : undefined;
+
+if (!prompt) {
+  return Astro.redirect('/404');
+}
+
+// Get related prompts (same category, excluding current)
+const allPrompts = await getPrompts();
+const relatedPrompts = allPrompts
+  .filter((p) => p.category === prompt.category && p.id !== prompt.id)
+  .slice(0, 4);
+
+const siteUrl = import.meta.env.SITE_URL || 'https://prompster.art';
+const isLoggedIn = !!Astro.locals.user;
+
+// Parse basic markdown-style text into styled HTML
+let parsedSeoDescription = '';
+if (prompt.seoDescription) {
+  const lines = prompt.seoDescription.split('\n');
+  let inList = false;
+  
+  lines.forEach(line => {
+    line = line.trim();
+    if (!line) return;
+    
+    // Bold parsing
+    line = line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    
+    if (line.startsWith('- ')) {
+      if (!inList) {
+        parsedSeoDescription += '<ul>\n';
+        inList = true;
+      }
+      parsedSeoDescription += `  <li><span class="seo-icon">✨</span> <span>${line.substring(2)}</span></li>\n`;
+    } else {
+      if (inList) {
+        parsedSeoDescription += '</ul>\n';
+        inList = false;
+      }
+      parsedSeoDescription += `<p>${line}</p>\n`;
+    }
+  });
+  if (inList) parsedSeoDescription += '</ul>\n';
+}
+---
+
+<BaseLayout
+  title={prompt.title}
+  description={`AI prompt: ${prompt.content.substring(0, 150)}...`}
+  ogImage={prompt.images[0]}
+  publishedTime={prompt.createdAt}
+  modifiedTime={prompt.updatedAt}
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" set:html={JSON.stringify([
+      {
+        "@context": "https://schema.org",
+        "@type": "CreativeWork",
+        "name": prompt.title,
+        "description": prompt.content,
+        "image": prompt.images,
+        "dateCreated": prompt.createdAt,
+        "datePublished": prompt.createdAt,
+        "dateModified": prompt.updatedAt,
+        "keywords": prompt.tags.join(', '),
+        "genre": prompt.category,
+        "url": `${siteUrl}/prompt/${prompt.slug}`,
+        "author": {
+          "@type": "Organization",
+          "name": "Prompster"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Prompster",
+          "logo": {
+            "@type": "ImageObject",
+            "url": `${siteUrl}/favicon.svg`
+          }
+        },
+        "inLanguage": "en-US"
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [{
+          "@type": "Question",
+          "name": `What is the AI prompt for ${prompt.title}?`,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": prompt.content
+          }
+        }]
+      }
+    ])} />
+    
+    <style>
+      .auth-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+      .auth-modal-overlay.active {
+        display: flex;
+        opacity: 1;
+      }
+      .auth-modal {
+        background: var(--color-bg-secondary);
+        padding: 2.5rem;
+        border-radius: var(--radius-lg);
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        border: 1px solid var(--color-border);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+      }
+      .auth-modal h2 { margin-top: 0; margin-bottom: 1rem; font-size: 1.5rem; color: var(--color-text-primary); }
+      .auth-modal p { color: var(--color-text-secondary); margin-bottom: 2rem; line-height: 1.6; }
+      .auth-modal .btn { width: 100%; margin-bottom: 0.75rem; display: block; }
+      
+      .blurred-text {
+        filter: blur(6px);
+        user-select: none;
+        cursor: pointer;
+        transition: filter 0.2s ease;
+      }
+      .blurred-text:hover {
+        filter: blur(4px);
+      }
+      
+      .prompt-seo-block {
+        margin-top: var(--space-8);
+        padding: var(--space-6);
+        background: var(--color-bg-secondary);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--color-border-subtle);
+      }
+      .prompt-seo-block h3 {
+        font-size: var(--text-lg);
+        margin-bottom: var(--space-3);
+        color: var(--color-text-primary);
+      }
+      .prompt-seo-block p {
+        font-size: var(--text-sm);
+        color: var(--color-text-secondary);
+        margin-bottom: var(--space-4);
+        line-height: 1.6;
+      }
+      .prompt-seo-block ul {
+        font-size: var(--text-sm);
+        color: var(--color-text-secondary);
+        padding-left: 0;
+        list-style: none;
+        margin: 0;
+      }
+      .prompt-seo-block li {
+        margin-bottom: var(--space-2);
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-2);
+      }
+      .prompt-seo-block li:last-child {
+        margin-bottom: 0;
+      }
+      .seo-icon {
+        color: var(--color-accent-primary);
+        flex-shrink: 0;
+      }
+
+      @media (max-width: 768px) {
+        .prompt-seo-block {
+          margin-top: var(--space-6);
+          padding: var(--space-4);
+        }
+        .prompt-seo-block h3 {
+          font-size: var(--text-base);
+        }
+      @media (max-width: 480px) {
+        .auth-modal {
+          padding: 2rem 1.25rem;
+          width: 95%;
+        }
+        .auth-modal h2 {
+          font-size: 1.25rem;
+          margin-bottom: 0.75rem;
+        }
+        .auth-modal p {
+          font-size: 0.9rem;
+          margin-bottom: 1.5rem;
+        }
+      }
+    </style>
+  </Fragment>
+
+  <Header slot="header" />
+
+  <article class="detail-page container">
+    <header style="margin-bottom: var(--space-4);">
+      <a href="/" class="detail-page__back" data-astro-prefetch="load">
+        ← Back to Gallery
+      </a>
+    </header>
+
+    <div class="detail-page__grid">
+      <!-- Image Carousel -->
+      <figure id="left-column" style="margin: 0; display: flex; flex-direction: column; gap: var(--space-8);">
+        <ImageCarousel images={prompt.images} alt={prompt.title} />
+      </figure>
+
+      <!-- Prompt Details -->
+      <section id="right-column" aria-labelledby="prompt-title">
+        <header class="prompt-detail__meta" style="position: relative; padding-right: 60px;">
+          <button class="favorite-btn" data-prompt-id={prompt.id} aria-label="Save to Favourites" style="position: absolute; top: 0; right: 0; background: transparent; border: 1px solid var(--color-border-subtle); border-radius: 50%; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; color: var(--color-text-secondary);">
+            <svg class="heart-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: all 0.2s ease;">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+            </svg>
+          </button>
+          
+          <span class="prompt-detail__category">{prompt.category}</span>
+          <h1 id="prompt-title" class="prompt-detail__title">{prompt.title}</h1>
+          <div class="prompt-detail__tags">
+            {prompt.tags.map((tag) => (
+              <TagBadge tag={tag} category={prompt.category} />
+            ))}
+          </div>
+        </header>
+
+        <div class="prompt-detail__content-area">
+          <div class="prompt-detail__content-label">Prompt</div>
+          <p 
+            class={`prompt-detail__content-text ${!isLoggedIn ? 'blurred-text auth-trigger' : ''}`} 
+            id="prompt-text-display"
+          >
+            {prompt.content}
+          </p>
+        </div>
+
+        <CopyButton text={prompt.content} authRequired={!isLoggedIn} />
+
+        <!-- EXPERIMENT: SEO Description Block -->
+        <div id="seo-block" class="prompt-seo-block">
+          <h3>Why use this prompt?</h3>
+          {prompt.seoDescription ? (
+            <div class="prompt-seo-content">
+              <Fragment set:html={parsedSeoDescription} />
+            </div>
+          ) : (
+            <>
+              <p>
+                Unlock the full potential of your AI generation with this highly-optimized <strong>{prompt.category}</strong> prompt. Designed for precision and detail, this setup helps you achieve stunning, professional-grade results instantly without the guesswork.
+              </p>
+              <ul>
+                <li>
+                  <span class="seo-icon">✨</span> <span><strong>Ready to Use:</strong> Just copy, paste, and generate.</span>
+                </li>
+                <li>
+                  <span class="seo-icon">✨</span> <span><strong>Customizable:</strong> Easily swap subjects and colors.</span>
+                </li>
+                <li>
+                  <span class="seo-icon">✨</span> <span><strong>High Quality:</strong> Optimized for Midjourney & DALL-E.</span>
+                </li>
+              </ul>
+            </>
+          )}
+        </div>
+        <!-- /EXPERIMENT -->
+
+        <script define:vars={{ prompts: prompt.prompts || [prompt.content], isLoggedIn }}>
+          document.addEventListener('astro:page-load', () => {
+            window.addEventListener('imageChanged', (e) => {
+              const index = e.detail.index;
+              const currentPrompt = prompts[index] || prompts[0];
+              
+              const textDisplay = document.getElementById('prompt-text-display');
+              if (textDisplay) {
+                textDisplay.textContent = currentPrompt;
+              }
+              
+              const copyBtn = document.getElementById('copy-prompt-btn');
+              if (copyBtn) {
+                copyBtn.setAttribute('data-prompt', currentPrompt);
+              }
+            });
+
+            if (!isLoggedIn) {
+              const modal = document.getElementById('auth-modal');
+              const closeBtn = document.getElementById('close-modal');
+              
+              const showModal = () => {
+                if (modal) modal.classList.add('active');
+              };
+              
+              const hideModal = () => {
+                if (modal) modal.classList.remove('active');
+              };
+
+              // Intercept clicks on the prompt text and copy button
+              document.querySelectorAll('.auth-trigger, .requires-auth').forEach(el => {
+                el.addEventListener('click', (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  showModal();
+                });
+              });
+
+              if (closeBtn) {
+                closeBtn.addEventListener('click', hideModal);
+              }
+              if (modal) {
+                modal.addEventListener('click', (e) => {
+                  if (e.target === modal) hideModal();
+                });
+              }
+            }
+
+            // Dynamic Layout Balancer
+            function balanceColumns() {
+              if (window.innerWidth <= 900) return;
+              
+              const leftColumn = document.getElementById('left-column');
+              const rightColumn = document.getElementById('right-column');
+              const seoBlock = document.getElementById('seo-block');
+              
+              if (!leftColumn || !rightColumn || !seoBlock) return;
+              
+              // Temporarily remove seo block to measure true heights
+              const parent = seoBlock.parentElement;
+              seoBlock.remove();
+              
+              const leftHeight = leftColumn.offsetHeight;
+              const rightHeight = rightColumn.offsetHeight;
+              
+              // If right column is much taller than left, move SEO block to left
+              if (rightHeight > leftHeight + 100) {
+                leftColumn.appendChild(seoBlock);
+              } else {
+                rightColumn.appendChild(seoBlock);
+              }
+            }
+            
+            balanceColumns();
+            let timeout;
+            window.addEventListener('resize', () => {
+              clearTimeout(timeout);
+              timeout = setTimeout(balanceColumns, 100);
+            });
+          });
+        </script>
+
+        <footer style="margin-top: var(--space-6); display: flex; gap: var(--space-4); font-size: var(--text-xs); color: var(--color-text-tertiary);">
+          <time datetime={prompt.createdAt}>Created: {new Date(prompt.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
+        </footer>
+      </section>
+    </div>
+
+    <!-- Related Prompts -->
+    {relatedPrompts.length > 0 && (
+      <aside class="more-prompts" aria-label="Related Prompts">
+        <h2 class="more-prompts__title">More {prompt.category} Prompts</h2>
+        <div class="masonry-grid stagger-children">
+          {relatedPrompts.map((rp) => (
+            <PromptCard prompt={rp} />
+          ))}
+        </div>
+      </aside>
+    )}
+  </article>
+
+  <!-- Auth Modal Overlay -->
+  {!isLoggedIn && (
+    <div class="auth-modal-overlay" id="auth-modal">
+      <div class="auth-modal" style="position: relative;">
+        <button id="close-modal" aria-label="Close modal" style="position: absolute; top: 1.25rem; right: 1.25rem; background: none; border: none; color: var(--color-text-tertiary); cursor: pointer; padding: 0.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='var(--color-text-primary)';" onmouseout="this.style.background='none'; this.style.color='var(--color-text-tertiary)';">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+        <img src="/logo.png" alt="Prompster Logo" style="height: 80px; width: auto; object-fit: contain; margin-bottom: 1.5rem; display: block; margin-left: auto; margin-right: auto;" />
+        <h2>Unlock the Prompt</h2>
+        <p>Create a free account or log in to view and copy full prompts, save your favorites, and get a personalized feed!</p>
+        <a href="/signup" class="btn btn--primary">Sign Up Free</a>
+        <a href="/login" class="btn btn--outline">Log In</a>
+      </div>
+    </div>
+  )}
+
+  <Footer slot="footer" />
+</BaseLayout>

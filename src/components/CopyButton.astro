@@ -1,0 +1,66 @@
+---
+interface Props {
+  text: string;
+  authRequired?: boolean;
+}
+
+const { text, authRequired = false } = Astro.props;
+---
+
+<button
+  class={`btn btn--copy ${authRequired ? 'requires-auth' : ''}`}
+  id="copy-prompt-btn"
+  data-prompt={text}
+  aria-label="Copy prompt to clipboard"
+>
+  <span class="copy-btn__icon" id="copy-icon">📋</span>
+  <span class="copy-btn__text" id="copy-text">Copy Prompt</span>
+</button>
+
+<script>
+  const btn = document.getElementById('copy-prompt-btn');
+  if (btn) {
+    btn.addEventListener('click', async (e) => {
+      if (btn.classList.contains('requires-auth')) {
+        // Handled globally by auth modal interceptor
+        return;
+      }
+      const promptText = btn.getAttribute('data-prompt') || '';
+      const iconEl = document.getElementById('copy-icon');
+      const textEl = document.getElementById('copy-text');
+
+      try {
+        await navigator.clipboard.writeText(promptText);
+        btn.classList.add('copied');
+        if (iconEl) iconEl.textContent = '✅';
+        if (textEl) textEl.textContent = 'Copied!';
+
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          if (iconEl) iconEl.textContent = '📋';
+          if (textEl) textEl.textContent = 'Copy Prompt';
+        }, 2000);
+      } catch {
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = promptText;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+
+        btn.classList.add('copied');
+        if (iconEl) iconEl.textContent = '✅';
+        if (textEl) textEl.textContent = 'Copied!';
+
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          if (iconEl) iconEl.textContent = '📋';
+          if (textEl) textEl.textContent = 'Copy Prompt';
+        }, 2000);
+      }
+    });
+  }
+</script>

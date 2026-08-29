@@ -1,0 +1,190 @@
+---
+interface Props {
+  images: string[];
+  alt: string;
+}
+
+const { images, alt } = Astro.props;
+const videoBaseUrl = import.meta.env.PUBLIC_VIDEO_CDN_BASE || '';
+
+function isVideoUrl(url: string) {
+  return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov');
+}
+
+function getMediaUrl(url: string) {
+  if (isVideoUrl(url)) {
+    return url.startsWith('http') ? url : `${videoBaseUrl}${url}`;
+  }
+  if (url.includes('unsplash.com')) {
+    return url.includes('?') ? `${url}&fm=webp&q=80&w=1200` : `${url}?fm=webp&q=80&w=1200`;
+  }
+  if (url.includes('supabase.co/storage/v1/object/public/')) {
+    return url.replace('/object/public/', '/render/image/public/') + '?width=1200&format=webp&quality=80';
+  }
+  return url;
+}
+---
+
+<div class="carousel" id="image-carousel" role="region" aria-label="Media gallery" aria-roledescription="carousel">
+  <div class="carousel__main skeleton" id="carousel-main-container">
+    <div class="carousel__spinner" style="display: none;">
+      <div class="spinner"><div class="spinner__circle"></div></div>
+    </div>
+    {images.map((src, i) => {
+      const isVideo = isVideoUrl(src);
+      const mediaUrl = getMediaUrl(src);
+      
+      return isVideo ? (
+        <video
+          src={mediaUrl}
+          class={`carousel__image ${i === 0 ? 'carousel__image--active' : ''}`}
+          data-index={i}
+          style={i !== 0 ? 'display: none; width: 100%; height: 100%; object-fit: cover;' : 'width: 100%; height: 100%; object-fit: cover;'}
+          autoplay
+          loop
+          muted
+          playsinline
+          oncanplay="document.getElementById('carousel-main-container').classList.remove('skeleton')"
+        />
+      ) : (
+        <img
+          src={mediaUrl}
+          alt={`${alt} - Media ${i + 1}`}
+          class={`carousel__image ${i === 0 ? 'carousel__image--active' : ''}`}
+          data-index={i}
+          loading="eager"
+          decoding="async"
+          style={i !== 0 ? 'display: none;' : ''}
+          onload="document.getElementById('carousel-main-container').classList.remove('skeleton')"
+        />
+      );
+    })}
+
+    {images.length > 1 && (
+      <>
+        <button
+          class="carousel__nav-btn carousel__nav-btn--prev"
+          aria-label="Previous image"
+          data-action="prev"
+        >
+          ‹
+        </button>
+        <button
+          class="carousel__nav-btn carousel__nav-btn--next"
+          aria-label="Next image"
+          data-action="next"
+        >
+          ›
+        </button>
+      </>
+    )}
+  </div>
+
+  {images.length > 1 && (
+    <div class="carousel__dots" role="tablist" aria-label="Image navigation">
+      {images.map((_, i) => (
+        <button
+          class={`carousel__dot ${i === 0 ? 'carousel__dot--active' : ''}`}
+          role="tab"
+          aria-selected={i === 0 ? 'true' : 'false'}
+          aria-label={`Go to image ${i + 1}`}
+          data-dot={i}
+        />
+      ))}
+    </div>
+  )}
+</div>
+
+<script>
+  function initCarousel() {
+    const carousel = document.getElementById('image-carousel');
+    if (carousel) {
+      const images = carousel.querySelectorAll('.carousel__image') as NodeListOf<HTMLElement>;
+      const dots = carousel.querySelectorAll('.carousel__dot') as NodeListOf<HTMLButtonElement>;
+      const prevBtn = carousel.querySelector('[data-action="prev"]') as HTMLButtonElement;
+      const nextBtn = carousel.querySelector('[data-action="next"]') as HTMLButtonElement;
+      const spinner = carousel.querySelector('.carousel__spinner') as HTMLElement;
+      let current = 0;
+
+      function showImage(index: number) {
+        images.forEach((img, i) => {
+          img.style.display = i === index ? 'block' : 'none';
+          img.classList.toggle('carousel__image--active', i === index);
+        });
+        dots.forEach((dot, i) => {
+          dot.classList.toggle('carousel__dot--active', i === index);
+          dot.setAttribute('aria-selected', String(i === index));
+        });
+        current = index;
+        window.dispatchEvent(new CustomEvent('imageChanged', { detail: { index } }));
+
+        const activeMedia = images[index];
+        if (activeMedia instanceof HTMLImageElement && !activeMedia.complete) {
+          if (spinner) spinner.style.display = 'flex';
+          activeMedia.onload = () => {
+            if (spinner && current === index) spinner.style.display = 'none';
+          };
+          activeMedia.onerror = () => {
+            if (spinner && current === index) spinner.style.display = 'none';
+          };
+        } else if (activeMedia instanceof HTMLVideoElement) {
+          if (spinner && activeMedia.readyState < 3) {
+            spinner.style.display = 'flex';
+            activeMedia.oncanplay = () => {
+              if (spinner && current === index) spinner.style.display = 'none';
+            };
+            activeMedia.onerror = () => {
+              if (spinner && current === index) spinner.style.display = 'none';
+            };
+          } else {
+            if (spinner) spinner.style.display = 'none';
+          }
+        } else {
+          if (spinner) spinner.style.display = 'none';
+        }
+      }
+
+      if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+          showImage(current > 0 ? current - 1 : images.length - 1);
+        });
+      }
+
+      if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+          showImage(current < images.length - 1 ? current + 1 : 0);
+        });
+      }
+
+      dots.forEach((dot) => {
+        dot.addEventListener('click', () => {
+          const index = parseInt(dot.getAttribute('data-dot') || '0');
+          showImage(index);
+        });
+      });
+
+      // Keyboard navigation
+      carousel.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'ArrowLeft') showImage(current > 0 ? current - 1 : images.length - 1);
+        if (e.key === 'ArrowRight') showImage(current < images.length - 1 ? current + 1 : 0);
+      });
+    }
+  }
+
+  document.addEventListener('astro:page-load', initCarousel);
+</script>
+
+<style>
+  .carousel__spinner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-secondary);
+    z-index: 10;
+  }
+</style>

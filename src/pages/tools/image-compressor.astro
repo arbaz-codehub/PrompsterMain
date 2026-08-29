@@ -1,0 +1,663 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import PromoBanner from '../../components/PromoBanner.astro';
+---
+
+<BaseLayout
+  title="Free Lossless Image Compressor | Convert JPG/PNG to WebP Instantly"
+  description="Compress massive AI images locally in your browser for free. 100% private, lossless WebP conversion, zero upload limits, perfect for Supabase and bulk processing."
+>
+  <style is:global slot="head">
+    .compressor-page {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    
+    /* Parallax Backgrounds */
+    .parallax-bg {
+      position: absolute;
+      z-index: -1;
+      opacity: 0.15;
+      border-radius: 50%;
+      overflow: hidden;
+      filter: blur(8px);
+      transition: transform 0.1s ease-out;
+      pointer-events: none;
+    }
+    .parallax-bg img {
+      width: 800px;
+      height: 800px;
+      object-fit: cover;
+    }
+    @media (max-width: 768px) {
+      .parallax-bg img {
+        width: 400px;
+        height: 400px;
+      }
+    }
+
+    /* Layout */
+    .compressor-main {
+      width: 100%;
+      max-width: 1200px;
+      padding: 4rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6rem;
+    }
+    
+    .compressor-section {
+      width: 100%;
+    }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .hero h1 { 
+      font-family: var(--font-heading, 'Outfit', sans-serif); 
+      font-size: 4rem; 
+      line-height: 1.1; 
+      margin-top: 0; 
+      margin-bottom: 1.5rem; 
+      letter-spacing: -0.03em;
+      background: linear-gradient(180deg, #FFFFFF 0%, #a3a3a3 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p { 
+      color: var(--color-text-secondary, #a3a3a3); 
+      font-size: 1.25rem; 
+      margin-bottom: 3rem; 
+      line-height: 1.6; 
+    }
+    
+    /* Mobile Overrides for Hero */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.25rem; }
+      .hero p { font-size: 1rem; margin-bottom: 2rem; }
+      .compressor-main { padding: 2rem 1rem; gap: 4rem; }
+    }
+
+    /* App Container */
+    .app-container {
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+      background: var(--color-bg-secondary, #0a0a0a);
+      border: 1px solid var(--color-border, rgba(255, 255, 255, 0.15));
+      border-radius: 1.5rem;
+      padding: 3rem;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05);
+      position: relative;
+      overflow: hidden;
+    }
+    /* Subtle glow */
+    .app-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 200px;
+      background: radial-gradient(ellipse at top, rgba(255,255,255,0.1), transparent 70%);
+      pointer-events: none;
+    }
+    
+    @media (max-width: 768px) {
+      .app-container { padding: 1.5rem; border-radius: 1rem; }
+    }
+    
+    .dropzone {
+      border: 2px dashed var(--color-border, rgba(255, 255, 255, 0.15));
+      border-radius: 1rem;
+      padding: 4rem 2rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: var(--color-bg-elevated, #1a1a1a);
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--color-accent-primary, #ffffff);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .dropzone p { margin: 0; font-size: 1.25rem; font-weight: 500; color: var(--color-text-primary, #ffffff); }
+    .dropzone span { display: block; font-size: 0.875rem; color: var(--color-text-secondary, #a3a3a3); margin-top: 0.5rem; }
+    
+    @media (max-width: 768px) {
+      .dropzone { padding: 2.5rem 1rem; }
+      .dropzone p { font-size: 1.1rem; }
+    }
+
+    #file-input { display: none; }
+    
+    /* Results UI */
+    .results {
+      display: none;
+      text-align: left;
+    }
+    .results.active { display: block; }
+    
+    .queue-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.15));
+    }
+    .queue-header h3 {
+      margin: 0;
+      font-family: var(--font-heading, 'Outfit', sans-serif);
+      font-size: 1.25rem;
+    }
+    
+    .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 2rem;
+      padding-right: 0.5rem;
+    }
+    
+    /* Scrollbar */
+    .file-list::-webkit-scrollbar { width: 6px; }
+    .file-list::-webkit-scrollbar-track { background: transparent; }
+    .file-list::-webkit-scrollbar-thumb { background: var(--color-border, rgba(255, 255, 255, 0.15)); border-radius: 3px; }
+    .file-list::-webkit-scrollbar-thumb:hover { background: var(--color-border-hover, rgba(255, 255, 255, 0.3)); }
+
+    .file-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--color-bg-elevated, #1a1a1a);
+      border: 1px solid var(--color-border, rgba(255, 255, 255, 0.15));
+      border-radius: 0.75rem;
+      padding: 1rem;
+    }
+    
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex: 1;
+      min-width: 0;
+    }
+    .file-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 0.5rem;
+      object-fit: cover;
+      border: 1px solid var(--color-border, rgba(255,255,255,0.15));
+      background: rgba(255,255,255,0.05);
+      flex-shrink: 0;
+    }
+    .file-name-block {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      min-width: 0;
+    }
+    .file-name {
+      font-weight: 500;
+      font-size: 0.875rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 250px;
+    }
+    .file-meta {
+      font-size: 0.75rem;
+      color: var(--color-text-secondary, #a3a3a3);
+    }
+    .file-meta .success { color: var(--color-success, #10b981); font-weight: 600; }
+    
+    .file-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    /* Status Badges */
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      padding: 0.25rem 0.5rem;
+      border-radius: 1rem;
+    }
+    .status-pending { color: var(--color-text-secondary, #a3a3a3); background: rgba(255,255,255,0.1); }
+    .status-processing { color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+    .status-done { color: var(--color-success, #10b981); background: rgba(16, 185, 129, 0.1); }
+    
+    /* Loading Spinner */
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(59, 130, 246, 0.3);
+      border-top-color: #3b82f6;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    
+    /* Individual Download Button */
+    .btn-icon {
+      background: transparent;
+      border: 1px solid var(--color-border, rgba(255, 255, 255, 0.15));
+      color: var(--color-text-primary, #ffffff);
+      width: 32px;
+      height: 32px;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-icon:hover {
+      background: var(--color-accent-primary, #ffffff);
+      color: #000;
+      border-color: var(--color-accent-primary, #ffffff);
+    }
+    .btn-icon svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    
+    /* Global Buttons */
+    .btn-primary, .btn-secondary {
+      display: block;
+      width: 100%;
+      padding: 1rem 1.5rem;
+      font-family: var(--font-heading, 'Outfit', sans-serif);
+      font-weight: 600;
+      font-size: 1.1rem;
+      text-align: center;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+    
+    .btn-primary {
+      background: var(--color-accent-primary, #ffffff);
+      color: #000;
+      border: none;
+    }
+    .btn-primary:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    .btn-secondary {
+      background: transparent;
+      color: var(--color-text-primary, #ffffff);
+      border: 1px solid var(--color-border, rgba(255, 255, 255, 0.15));
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover:not(:disabled) { background: rgba(255,255,255,0.05); border-color: var(--color-text-secondary, #a3a3a3); }
+    .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    /* Mobile overrides for file row */
+    @media (max-width: 768px) {
+      .file-row { flex-direction: column; align-items: flex-start; gap: 1rem; }
+      .file-actions { width: 100%; justify-content: flex-end; }
+      .file-name { max-width: calc(100vw - 120px); }
+      .btn-group { flex-direction: column; }
+    }
+    
+    /* Info Sections */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    .info-card {
+      background: var(--color-bg-secondary, #0a0a0a);
+      border: 1px solid var(--color-border, rgba(255, 255, 255, 0.15));
+      border-radius: 1rem;
+      padding: 2rem;
+    }
+    .info-card h3 { font-family: var(--font-heading, 'Outfit', sans-serif); margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem; }
+    .info-card p { color: var(--color-text-secondary, #a3a3a3); margin: 0; line-height: 1.5; font-size: 0.95rem; }
+    
+    @media (max-width: 768px) {
+      .info-grid { grid-template-columns: 1fr; }
+    }
+    
+    .faq {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .faq-item {
+      border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.15));
+      padding: 1.5rem 0;
+    }
+    .faq-item:last-child { border-bottom: none; }
+    .faq-item h4 { font-family: var(--font-heading, 'Outfit', sans-serif); font-size: 1.1rem; margin-top: 0; margin-bottom: 0.5rem; }
+    .faq-item p { color: var(--color-text-secondary, #a3a3a3); margin: 0; line-height: 1.6; font-size: 0.95rem; }
+  </style>
+
+  <Header slot="header" />
+
+  <div class="compressor-page">
+    <!-- Parallax Background Elements -->
+    <div class="parallax-bg" id="parallax-1" style="top: -5%; left: -15%;">
+      <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=1200" alt="Cyberpunk geometry" />
+    </div>
+    <div class="parallax-bg" id="parallax-2" style="top: 40%; right: -20%;">
+      <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1200" alt="Neon grid" />
+    </div>
+
+    <div class="compressor-main">
+      <section class="compressor-section hero">
+        <h1>Free Lossless Image Compressor</h1>
+        <p>Drop your massive Midjourney PNGs or JPGs below. We compress them into WebP instantly using your own browser. Zero server uploads. 100% private.</p>
+        
+        <div class="app-container">
+          <div class="dropzone" id="dropzone">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 1rem; color: var(--color-text-secondary, #a3a3a3);">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+            </svg>
+            <p>Drag & Drop your images here</p>
+            <span>Supports bulk uploading (JPG, PNG, WEBP)</span>
+            <input type="file" id="file-input" accept="image/*" multiple />
+          </div>
+
+          <div class="results" id="results">
+            <div class="queue-header">
+              <h3>Processing Queue</h3>
+              <span id="global-stats" style="font-size: 0.875rem; color: var(--color-text-secondary, #a3a3a3);">Waiting...</span>
+            </div>
+            
+            <div class="file-list" id="file-list">
+              <!-- JS Injected Rows go here -->
+            </div>
+            
+            <div class="btn-group">
+              <button class="btn-secondary" id="clear-queue-btn" disabled>Clear Queue</button>
+              <button class="btn-primary" id="download-all-btn" disabled>Download All Files</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Promo Banner Injection -->
+      <PromoBanner location="compressor_bottom" />
+
+      <section class="compressor-section">
+        <h2 style="font-family: var(--font-heading, 'Outfit', sans-serif); font-size: 2rem; text-align: center; margin-bottom: 3rem;">Why use our Free WebP Compressor?</h2>
+        <div class="info-grid">
+          <div class="info-card">
+            <h3>🔒 100% Client-Side Privacy</h3>
+            <p>Unlike other free image compressors, your files never leave your computer. We use WebAssembly to compress images directly in your browser. Perfect for private, unreleased AI generations.</p>
+          </div>
+          <div class="info-card">
+            <h3>⚡ Lightning Fast Bulk Uploads</h3>
+            <p>Drop 100 images at once. Because we utilize your device's multi-core CPU rather than waiting for server uploads and downloads, batch processing is virtually instantaneous.</p>
+          </div>
+          <div class="info-card">
+            <h3>💎 Visually Lossless WebP</h3>
+            <p>Our algorithms are hardcoded for maximum quality. Shrink 10MB PNGs into 500KB WebP files while retaining perfectly rich colors, deep blacks, and razor-sharp details for your SaaS or gallery.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="compressor-section faq">
+        <h2 style="font-family: var(--font-heading, 'Outfit', sans-serif); font-size: 2rem; text-align: center; margin-bottom: 3rem;">Frequently Asked Questions</h2>
+        
+        <div class="faq-item">
+          <h4>Is this really 100% free?</h4>
+          <p>Yes. Because the compression happens entirely inside your web browser (client-side), we don't have to pay for expensive cloud servers to process your files. We pass those savings onto you. No limits, no subscriptions.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h4>Will this degrade my image quality?</h4>
+          <p>We use highly-optimized visually lossless settings. While technically a massive file size reduction (up to 95%), the human eye cannot detect the difference between your original 10MB image and our compressed WebP output.</p>
+        </div>
+        
+        <div class="faq-item">
+          <h4>Why WebP?</h4>
+          <p>WebP is the modern standard for web imagery, developed by Google. It provides superior lossless and lossy compression for images on the web compared to older formats like JPEG and PNG. By converting to WebP, your website will load drastically faster and score higher on SEO audits.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <Footer slot="footer" />
+
+  <script>
+    import imageCompression from 'browser-image-compression';
+
+    document.addEventListener('astro:page-load', () => {
+      const dropzone = document.getElementById('dropzone');
+      const fileInput = document.getElementById('file-input');
+      const results = document.getElementById('results');
+      const fileList = document.getElementById('file-list');
+    const globalStats = document.getElementById('global-stats');
+    const downloadAllBtn = document.getElementById('download-all-btn');
+    const clearQueueBtn = document.getElementById('clear-queue-btn');
+    
+    let processedFiles: { file: File, url: string }[] = [];
+
+    // Parallax scroll effect
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY;
+      const p1 = document.getElementById('parallax-1');
+      const p2 = document.getElementById('parallax-2');
+      if (p1) p1.style.transform = `translateY(${scrolled * 0.4}px) rotate(${scrolled * 0.05}deg)`;
+      if (p2) p2.style.transform = `translateY(${scrolled * 0.2}px) rotate(-${scrolled * 0.05}deg)`;
+    });
+
+    if (clearQueueBtn) {
+      clearQueueBtn.addEventListener('click', () => {
+        processedFiles = [];
+        if (fileList) fileList.innerHTML = '';
+        if (results) results.classList.remove('active');
+        if (globalStats) globalStats.textContent = 'Waiting...';
+        if (fileInput) (fileInput as HTMLInputElement).value = '';
+        if (downloadAllBtn) (downloadAllBtn as HTMLButtonElement).disabled = true;
+        (clearQueueBtn as HTMLButtonElement).disabled = true;
+      });
+    }
+
+    if (dropzone && fileInput) {
+      dropzone.addEventListener('click', () => fileInput.click());
+      
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e: Event) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropzone.addEventListener(eventName, () => dropzone.classList.add('dragover'), false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropzone.addEventListener(eventName, () => dropzone.classList.remove('dragover'), false);
+      });
+
+      dropzone.addEventListener('drop', handleDrop, false);
+      fileInput.addEventListener('change', handleFiles, false);
+    }
+
+    function handleDrop(e: DragEvent) {
+      const dt = e.dataTransfer;
+      if (dt && dt.files) {
+        startQueue(Array.from(dt.files));
+      }
+    }
+
+    function handleFiles(e: Event) {
+      const target = e.target as HTMLInputElement;
+      if (target.files) {
+        startQueue(Array.from(target.files));
+      }
+    }
+
+    function formatBytes(bytes: number, decimals = 2) {
+      if (!+bytes) return '0 Bytes';
+      const k = 1024;
+      const dm = decimals < 0 ? 0 : decimals;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+    }
+
+    function generateId() {
+      return Math.random().toString(36).substring(2, 9);
+    }
+
+    async function startQueue(files: File[]) {
+      if (files.length === 0 || !fileList || !results || !downloadAllBtn || !globalStats) return;
+      
+      const imageFiles = files.filter(f => f.type.startsWith('image/'));
+      if (imageFiles.length === 0) return;
+
+      processedFiles = [];
+      fileList.innerHTML = '';
+      results.classList.add('active');
+      (downloadAllBtn as HTMLButtonElement).disabled = true;
+      if (clearQueueBtn) (clearQueueBtn as HTMLButtonElement).disabled = true;
+      
+      let totalOriginal = 0;
+      let totalCompressed = 0;
+      
+      const queueMap = new Map();
+      
+      for (const file of imageFiles) {
+        totalOriginal += file.size;
+        const id = generateId();
+        const fileName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
+        queueMap.set(id, { file, fileName });
+        
+        const previewUrl = URL.createObjectURL(file);
+        
+        const rowHTML = `
+          <div class="file-row" id="row-${id}">
+            <div class="file-info">
+              <img src="${previewUrl}" class="file-thumb" alt="Preview" />
+              <div id="icon-${id}" class="status-badge status-pending">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Wait
+              </div>
+              
+              <div class="file-name-block">
+                <div class="file-name" title="${fileName}">${fileName}</div>
+                <div class="file-meta" id="meta-${id}">${formatBytes(file.size)} &rarr; Pending...</div>
+              </div>
+            </div>
+            
+            <div class="file-actions" id="actions-${id}">
+            </div>
+          </div>
+        `;
+        fileList.insertAdjacentHTML('beforeend', rowHTML);
+      }
+
+      globalStats.textContent = `0 / ${imageFiles.length} Processed`;
+
+      const options = {
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+        fileType: 'image/webp'
+      };
+
+      let completedCount = 0;
+      
+      for (const [id, data] of queueMap.entries()) {
+        const row = document.getElementById(`row-${id}`);
+        const iconSlot = document.getElementById(`icon-${id}`);
+        const metaSlot = document.getElementById(`meta-${id}`);
+        const actionsSlot = document.getElementById(`actions-${id}`);
+        
+        if (!row || !iconSlot || !metaSlot || !actionsSlot) continue;
+        
+        iconSlot.className = 'status-badge status-processing';
+        iconSlot.innerHTML = `<div class="spinner"></div>`;
+        metaSlot.innerHTML = `${formatBytes(data.file.size)} &rarr; Compressing...`;
+        
+        try {
+          const compressedFile = await imageCompression(data.file, options);
+          const renamedFile = new File([compressedFile], data.fileName, { type: 'image/webp' });
+          
+          totalCompressed += renamedFile.size;
+          const objectUrl = URL.createObjectURL(renamedFile);
+          processedFiles.push({ file: renamedFile, url: objectUrl });
+          
+          const savedPct = Math.round((1 - (renamedFile.size / data.file.size)) * 100);
+          
+          iconSlot.className = 'status-badge status-done';
+          iconSlot.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Done`;
+          
+          metaSlot.innerHTML = `${formatBytes(data.file.size)} &rarr; <span class="success">${formatBytes(renamedFile.size)}</span> (-${savedPct}%)`;
+          
+          actionsSlot.innerHTML = `
+            <a href="${objectUrl}" download="${data.fileName}" class="btn-icon" title="Download ${data.fileName}">
+              <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            </a>
+          `;
+          
+        } catch (error) {
+          console.error('Error compressing', data.file.name, error);
+          iconSlot.className = 'status-badge status-pending';
+          iconSlot.style.color = '#ef4444';
+          iconSlot.innerHTML = 'Error';
+          metaSlot.innerHTML = 'Failed to compress';
+        }
+        
+        completedCount++;
+        globalStats.textContent = `${completedCount} / ${imageFiles.length} Processed`;
+      }
+      
+      if (processedFiles.length > 0) {
+        const totalPct = Math.round((1 - (totalCompressed / totalOriginal)) * 100);
+        globalStats.innerHTML = `<strong>Complete!</strong> Saved ${formatBytes(totalOriginal - totalCompressed)} (-${totalPct}%)`;
+        (downloadAllBtn as HTMLButtonElement).disabled = false;
+        if (clearQueueBtn) (clearQueueBtn as HTMLButtonElement).disabled = false;
+      }
+    }
+
+    if (downloadAllBtn) {
+      downloadAllBtn.addEventListener('click', async () => {
+        if (processedFiles.length === 0) return;
+        
+        processedFiles.forEach((item, i) => {
+          setTimeout(() => {
+            const a = document.createElement('a');
+            a.href = item.url;
+            a.download = item.file.name;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+          }, i * 500); 
+        });
+      });
+    }
+    }); // End of astro:page-load
+  </script>
+</BaseLayout>
+

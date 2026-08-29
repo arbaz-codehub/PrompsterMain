@@ -1,0 +1,266 @@
+---
+interface Props {
+  targetGrid: string;
+  itemClass: string;
+  titleClass: string;
+  descClass?: string;
+  tagClass: string;
+}
+
+const { targetGrid, itemClass, titleClass, descClass, tagClass } = Astro.props;
+---
+
+<div class="smart-filter" data-target={targetGrid} data-item={itemClass} data-title={titleClass} data-desc={descClass} data-tag={tagClass}>
+  <div class="smart-filter__search-bar">
+    <span class="smart-filter__search-icon">🔍</span>
+    <input type="text" class="smart-filter__search-input" placeholder="Search for tools, prompts, or resources..." aria-label="Search" />
+  </div>
+
+  <div class="smart-filter__tags-scroll">
+    <div class="smart-filter__tags-container">
+      <button class="smart-filter__tag-btn active" data-filter="all">All</button>
+      <!-- Dynamic tags injected here -->
+    </div>
+  </div>
+
+  <div class="smart-filter__empty-state" style="display: none;">
+    <div class="empty-state__icon">🔍</div>
+    <h3 class="empty-state__title">No results found</h3>
+    <p>Try adjusting your search terms or filters.</p>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const filters = document.querySelectorAll('.smart-filter');
+
+    filters.forEach(filterEl => {
+      const targetGrid = filterEl.getAttribute('data-target');
+      const itemClass = filterEl.getAttribute('data-item');
+      const titleClass = filterEl.getAttribute('data-title');
+      const descClass = filterEl.getAttribute('data-desc');
+      const tagClass = filterEl.getAttribute('data-tag');
+
+      if (!targetGrid || !itemClass || !titleClass || !tagClass) return;
+
+      const grid = document.querySelector(targetGrid);
+      if (!grid) return;
+
+      const searchInput = filterEl.querySelector('.smart-filter__search-input') as HTMLInputElement;
+      const tagsContainer = filterEl.querySelector('.smart-filter__tags-container');
+      const emptyState = filterEl.querySelector('.smart-filter__empty-state') as HTMLElement;
+      
+      const items = Array.from(grid.querySelectorAll(itemClass)) as HTMLElement[];
+      
+      // Extract unique tags
+      const uniqueTags = new Set<string>();
+      items.forEach(item => {
+        const tagEl = item.querySelector(tagClass);
+        if (tagEl && tagEl.textContent) {
+          uniqueTags.add(tagEl.textContent.trim());
+        }
+      });
+
+      // Render dynamic tags
+      if (tagsContainer && uniqueTags.size > 0) {
+        // Keep the "All" button
+        const allBtn = tagsContainer.querySelector('[data-filter="all"]');
+        tagsContainer.innerHTML = '';
+        if (allBtn) tagsContainer.appendChild(allBtn);
+
+        Array.from(uniqueTags).sort().forEach(tag => {
+          const btn = document.createElement('button');
+          btn.className = 'smart-filter__tag-btn';
+          btn.textContent = tag;
+          btn.setAttribute('data-filter', tag.toLowerCase());
+          tagsContainer.appendChild(btn);
+        });
+      } else if (tagsContainer) {
+        // If no tags found (or only empty ones), hide the tag container
+        (tagsContainer.parentElement as HTMLElement).style.display = 'none';
+      }
+
+      let currentSearch = '';
+      let currentTag = 'all';
+
+      const applyFilters = () => {
+        let visibleCount = 0;
+        const searchLower = currentSearch.toLowerCase();
+
+        items.forEach(item => {
+          const titleEl = item.querySelector(titleClass);
+          const descEl = descClass && descClass !== 'undefined' ? item.querySelector(descClass) : null;
+          const tagEl = item.querySelector(tagClass);
+
+          const titleText = titleEl?.textContent?.toLowerCase() || '';
+          const descText = descEl?.textContent?.toLowerCase() || '';
+          const itemTag = tagEl?.textContent?.trim().toLowerCase() || '';
+
+          const matchesSearch = titleText.includes(searchLower) || descText.includes(searchLower);
+          const matchesTag = currentTag === 'all' || itemTag === currentTag;
+
+          if (matchesSearch && matchesTag) {
+            item.style.display = ''; // Revert to grid/flex default
+            visibleCount++;
+          } else {
+            item.style.display = 'none';
+          }
+        });
+
+        if (visibleCount === 0) {
+          emptyState.style.display = 'flex';
+          grid.classList.add('smart-filter-grid-empty');
+        } else {
+          emptyState.style.display = 'none';
+          grid.classList.remove('smart-filter-grid-empty');
+        }
+      };
+
+      // Event Listeners
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          currentSearch = (e.target as HTMLInputElement).value;
+          applyFilters();
+        });
+      }
+
+      if (tagsContainer) {
+        tagsContainer.addEventListener('click', (e) => {
+          const btn = (e.target as HTMLElement).closest('.smart-filter__tag-btn');
+          if (!btn) return;
+
+          // Update active class
+          tagsContainer.querySelectorAll('.smart-filter__tag-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          currentTag = btn.getAttribute('data-filter') || 'all';
+          applyFilters();
+        });
+      }
+    });
+  });
+</script>
+
+<style is:global>
+  .smart-filter {
+    margin-bottom: var(--space-8);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    position: relative;
+    z-index: 10;
+  }
+
+  .smart-filter__search-bar {
+    position: relative;
+    max-width: 600px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .smart-filter__search-icon {
+    position: absolute;
+    left: var(--space-4);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .smart-filter__search-input {
+    width: 100%;
+    padding: var(--space-4) var(--space-4) var(--space-4) calc(var(--space-4) * 2.5);
+    background: var(--color-bg-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    color: var(--color-text-primary);
+    font-size: var(--text-base);
+    outline: none;
+    transition: all var(--transition-fast);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .smart-filter__search-input:focus {
+    border-color: var(--color-border-hover);
+    box-shadow: 0 4px 30px rgba(96, 165, 250, 0.15); /* Accent glow */
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .smart-filter__tags-scroll {
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+    padding-bottom: var(--space-2);
+  }
+  
+  .smart-filter__tags-scroll::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+
+  .smart-filter__tags-container {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-2);
+    flex-wrap: nowrap;
+    min-width: max-content;
+  }
+
+  .smart-filter__tag-btn {
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-full);
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+  }
+
+  .smart-filter__tag-btn:hover {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+  }
+
+  .smart-filter__tag-btn.active {
+    background: var(--color-text-primary);
+    color: var(--color-bg-primary);
+    border-color: var(--color-text-primary);
+  }
+
+  .smart-filter__empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-12) var(--space-4);
+    text-align: center;
+    background: var(--color-bg-elevated);
+    border: 1px dashed var(--color-border-subtle);
+    border-radius: var(--radius-2xl);
+    margin-top: var(--space-4);
+    animation: fadeIn 0.3s ease;
+  }
+  
+  .empty-state__icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--space-3);
+  }
+  
+  .empty-state__title {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    margin-bottom: var(--space-2);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>

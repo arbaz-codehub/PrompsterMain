@@ -1,0 +1,451 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { Image } from "astro:assets";
+import { createSupabaseClient } from "../lib/supabase";
+import ImagePreviewExperiment from "../components/ImagePreviewExperiment.astro";
+import SmartFilter from "../components/SmartFilter.astro";
+
+const siteUrl = import.meta.env.SITE_URL || "https://prompster.art";
+
+// Fetch dynamic data from Supabase
+const supabase = createSupabaseClient(Astro.cookies, Astro.request);
+const { data: toolsItems } = await supabase
+  .from("tools_items")
+  .select("*")
+  .order("created_at", { ascending: false });
+
+const mockTools = [
+  {
+    id: "1",
+    title: "Prompt Optimizer",
+    description:
+      "Instantly format, clean, and optimize your Midjourney prompts.",
+    image_url:
+      "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&q=80&w=800",
+    tag: "Utility",
+    status: "live",
+    link: "#",
+  },
+  {
+    id: "2",
+    title: "Aspect Ratio Calculator",
+    description:
+      "Calculate the exact aspect ratio for any pixel dimension easily.",
+    image_url:
+      "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800",
+    tag: "Calculator",
+    status: "live",
+    link: "#",
+  },
+];
+
+const tools = toolsItems && toolsItems.length > 0 ? toolsItems : mockTools;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "AI Tools — Prompster",
+  description:
+    "A suite of free, powerful AI tools to help creators, developers, and marketers get more from artificial intelligence.",
+  url: `${siteUrl}/tools`,
+};
+---
+
+<BaseLayout
+  title="AI Tools — Free Prompt & Design Tools | Prompster"
+  description="Free AI tools for prompt optimization, aspect ratio calculation, color palette generation, and more. Built for creators, by creators."
+  canonicalUrl={`${siteUrl}/tools`}
+>
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify(jsonLd)}
+    slot="head"
+  />
+  <Header slot="header" />
+
+  <main id="tools-main">
+    <section class="page-hero container">
+      <h1 class="page-hero__title">AI Tools That Work For You</h1>
+      <p class="page-hero__subtitle">
+        A growing suite of free, hand-built tools designed to supercharge your
+        creative and productive AI workflow.
+      </p>
+    </section>
+
+    <section class="container tools-section">
+      <SmartFilter 
+        targetGrid=".tools-grid" 
+        itemClass=".tools-card" 
+        titleClass=".tools-card__title" 
+        descClass=".tools-card__desc" 
+        tagClass=".tools-card__tag" 
+      />
+      <div class="tools-grid" role="list">
+        <!-- New Lossless WebP Compressor Card -->
+        <article
+          class="tools-card"
+          role="listitem"
+          aria-label="Free Lossless WebP Compressor"
+        >
+          <div class="tools-card__cover">
+            <img
+              src="/compressor_tool.png"
+              alt="Lossless WebP Compressor"
+              width="400"
+              height="225"
+              class="tools-card__img preview-trigger"
+              data-preview="/compressor_tool.png"
+            />
+          </div>
+
+          <div class="tools-card__content">
+            <div class="tools-card__meta">
+              <span class="tools-card__tag">Utility</span>
+            </div>
+            <h3 class="tools-card__title">Lossless WebP Compressor</h3>
+            <p class="tools-card__desc">
+              Compress massive AI images directly in your browser. 100% private,
+              zero upload limits.
+            </p>
+            <footer class="tools-card__footer">
+              <a
+                href="/tools/image-compressor"
+                class="btn btn--primary tools-card__btn">Launch Tool →</a
+              >
+            </footer>
+          </div>
+        </article>
+
+        {
+          tools.length > 0 ? (
+            tools.map((tool) => (
+              <article
+                class="tools-card"
+                role="listitem"
+                aria-label={tool.title}
+              >
+                <div class="tools-card__cover">
+                  {tool.image_url ? (
+                    <Image
+                      src={tool.image_url}
+                      alt={tool.title}
+                      width={400}
+                      height={225}
+                      class="tools-card__img preview-trigger"
+                      data-preview={tool.image_url}
+                    />
+                  ) : (
+                    <div class="tools-card__placeholder">No Image</div>
+                  )}
+                </div>
+
+                <div class="tools-card__content">
+                  <div class="tools-card__meta">
+                    <span class="tools-card__tag">{tool.tag}</span>
+                  </div>
+                  <h3 class="tools-card__title">{tool.title}</h3>
+                  <p class="tools-card__desc">{tool.description}</p>
+                  <footer class="tools-card__footer">
+                    {tool.status === "live" ? (
+                      <a
+                        href={tool.link || "#"}
+                        class="btn btn--primary tools-card__btn"
+                      >
+                        Launch Tool →
+                      </a>
+                    ) : (
+                      <button class="tools-card__btn-disabled" disabled>
+                        Coming Soon
+                      </button>
+                    )}
+                  </footer>
+                </div>
+              </article>
+            ))
+          ) : (
+            <div class="tools-empty">
+              <p>
+                We are currently building the first batch of tools. Stay tuned!
+              </p>
+            </div>
+          )
+        }
+      </div>
+    </section>
+
+    <aside class="container tools-request">
+      <div class="glass-card tools-request__card">
+        <h2 class="tools-request__title">💡 Request a Tool</h2>
+        <p class="tools-request__desc">
+          Have an idea for a tool that would save you hours every week? Let us
+          know and we might just build it.
+        </p>
+        <form id="request-tool-form" style="display: flex; flex-direction: column; gap: var(--space-3); text-align: left;">
+          <input type="email" id="request-email" placeholder="Your email (optional)" style="background: var(--color-bg-elevated); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); color: var(--color-text-primary); outline: none; transition: border-color var(--transition-fast);" />
+          <textarea id="request-idea" placeholder="Describe the tool you need..." required style="background: var(--color-bg-elevated); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); color: var(--color-text-primary); outline: none; resize: vertical; min-height: 100px; transition: border-color var(--transition-fast);"></textarea>
+          <button type="submit" id="request-btn" class="btn btn--primary" style="align-self: center; margin-top: var(--space-2);">Submit Idea</button>
+        </form>
+      </div>
+    </aside>
+  </main>
+
+  <ImagePreviewExperiment />
+
+  <Footer slot="footer" />
+</BaseLayout>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    document.querySelectorAll(".tools-card").forEach((card) => {
+      card.addEventListener("mousemove", (e) => {
+        const mouseEvent = e as MouseEvent;
+        const rect = card.getBoundingClientRect();
+        const x = mouseEvent.clientX - rect.left;
+        const y = mouseEvent.clientY - rect.top;
+        (card as HTMLElement).style.setProperty("--mouse-x", `${x}px`);
+        (card as HTMLElement).style.setProperty("--mouse-y", `${y}px`);
+      });
+    });
+
+    const form = document.getElementById('request-tool-form') as HTMLFormElement;
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('request-btn') as HTMLButtonElement;
+        const emailInput = document.getElementById('request-email') as HTMLInputElement;
+        const ideaInput = document.getElementById('request-idea') as HTMLTextAreaElement;
+        
+        if (btn && ideaInput) {
+          const originalText = btn.textContent;
+          btn.textContent = 'Submitting...';
+          btn.disabled = true;
+
+          try {
+            const res = await fetch('/api/requests', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                email: emailInput?.value || null,
+                idea_description: ideaInput.value 
+              })
+            });
+            
+            if (res.ok) {
+              btn.textContent = "✓ Idea Submitted!";
+              btn.style.background = 'var(--color-accent-emerald)';
+              ideaInput.value = '';
+              if (emailInput) emailInput.value = '';
+            } else {
+              throw new Error('Failed to submit');
+            }
+          } catch (err) {
+            btn.textContent = "Error. Try again?";
+            btn.disabled = false;
+            setTimeout(() => { btn.textContent = originalText; }, 3000);
+          }
+        }
+      });
+    }
+  });
+</script>
+
+<style>
+  .page-hero {
+    padding: 120px var(--space-4) var(--space-8);
+    text-align: center;
+  }
+  .page-hero__title {
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 0%, #a3a3a3 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: var(--space-4);
+  }
+  .page-hero__subtitle {
+    font-size: var(--text-lg);
+    color: var(--color-text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .tools-section {
+    padding: 0 0 var(--space-16);
+  }
+
+  .tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--space-8);
+  }
+
+  .tools-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 4rem;
+    color: var(--color-text-muted);
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-2xl);
+    border: 1px dashed var(--color-border-subtle);
+  }
+
+  .tools-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border-radius: var(--radius-2xl);
+    transition:
+      transform var(--transition-base),
+      box-shadow var(--transition-base);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-subtle);
+    overflow: hidden;
+  }
+  .tools-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      350px circle at var(--mouse-x, -1000px) var(--mouse-y, -1000px),
+      rgba(255, 255, 255, 0.1),
+      transparent 80%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .tools-card:hover::before {
+    opacity: 1;
+  }
+  .tools-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-glow);
+    border-color: var(--color-border-hover);
+  }
+
+  .tools-card__cover,
+  .tools-card__content {
+    position: relative;
+    z-index: 2;
+    pointer-events: auto;
+  }
+  .tools-card__cover {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--color-bg-elevated);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+  .tools-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  .tools-card:hover .tools-card__img {
+    transform: scale(1.05);
+  }
+  .tools-card__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .tools-card__content {
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    flex: 1;
+  }
+
+  .tools-card__meta {
+    display: flex;
+    align-items: center;
+  }
+  .tools-card__tag {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    background: var(--color-bg-elevated);
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border: 1px solid var(--color-border-subtle);
+  }
+
+  .tools-card__title {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .tools-card__desc {
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    flex: 1;
+  }
+
+  .tools-card__footer {
+    margin-top: var(--space-4);
+    display: flex;
+  }
+  .tools-card__btn {
+    width: 100%;
+    justify-content: center;
+    font-weight: 600;
+  }
+  .tools-card__btn-disabled {
+    width: 100%;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border-subtle);
+    color: var(--color-text-muted);
+    background: var(--color-bg-elevated);
+    cursor: not-allowed;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition: background var(--transition-fast);
+  }
+  .tools-card__btn-disabled:hover {
+    background: var(--color-bg-tertiary);
+  }
+
+  .tools-request {
+    padding: 0 0 var(--space-20);
+  }
+  .tools-request__card {
+    max-width: 500px;
+    margin: 0 auto;
+    text-align: center;
+    padding: var(--space-10) var(--space-8);
+    border-radius: var(--radius-2xl);
+    border: 1px solid var(--color-border-subtle);
+  }
+  .tools-request__title {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+  }
+  .tools-request__desc {
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    line-height: 1.7;
+    margin-bottom: var(--space-6);
+  }
+</style>

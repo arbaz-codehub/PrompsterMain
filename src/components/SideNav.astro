@@ -1,0 +1,245 @@
+---
+import { getCategories } from '../lib/prompts';
+
+const categories = await getCategories();
+const url = new URL(Astro.request.url);
+const currentCategory = url.searchParams.get('category') || 'all';
+
+// Helper for category icons
+function getCategoryIcon(cat: string) {
+  const icons: Record<string, string> = {
+    'all': '✨',
+    'fantasy': '🐉',
+    'sci-fi': '🚀',
+    'portraits': '👤',
+    'landscapes': '🏞️',
+    'abstract': '🎨'
+  };
+  return icons[cat.toLowerCase()] || '📁';
+}
+---
+
+<!-- Toggle Button (Appears on scroll) -->
+<button id="side-nav-toggle" class="side-nav-toggle" aria-label="Open Categories Menu">
+  <span class="side-nav-toggle__icon">🗂️</span>
+</button>
+
+<!-- Backdrop overlay -->
+<div id="side-nav-backdrop" class="side-nav-backdrop"></div>
+
+<!-- Side Menu Panel -->
+<nav class="side-menu-panel" id="side-menu-panel" aria-label="Category Filters">
+  <div class="side-menu-panel__header">
+    <h3 class="side-menu-panel__title">Categories</h3>
+    <button id="side-menu-close" class="side-menu-panel__close" aria-label="Close Menu">✕</button>
+  </div>
+  <div class="side-menu-panel__content">
+    <a href="/" class={`side-menu__link ${currentCategory === 'all' ? 'side-menu__link--active' : ''}`}>
+      <span class="side-menu__icon">{getCategoryIcon('all')}</span>
+      <span class="side-menu__text">All Prompts</span>
+    </a>
+    {categories.map((cat) => (
+      <a href={`/?category=${cat.toLowerCase()}`} class={`side-menu__link ${currentCategory === cat.toLowerCase() ? 'side-menu__link--active' : ''}`}>
+        <span class="side-menu__icon">{getCategoryIcon(cat)}</span>
+        <span class="side-menu__text">{cat}</span>
+      </a>
+    ))}
+  </div>
+</nav>
+
+<style>
+  /* Floating Toggle Button */
+  .side-nav-toggle {
+    position: fixed;
+    top: 50%;
+    right: var(--space-6);
+    transform: translateY(-50%) translateX(150%);
+    z-index: var(--z-sticky);
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-full);
+    background: var(--color-bg-glass);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg), 0 0 20px rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-2xl);
+    cursor: pointer;
+    transition: transform var(--transition-spring), opacity var(--transition-base), box-shadow var(--transition-fast);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .side-nav-toggle.visible {
+    transform: translateY(-50%) translateX(0);
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .side-nav-toggle:hover {
+    box-shadow: var(--shadow-lg), 0 0 30px rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Backdrop */
+  .side-nav-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: var(--z-modal);
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-base);
+  }
+
+  .side-nav-backdrop.open {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Side Menu Panel */
+  .side-menu-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 320px;
+    max-width: 85vw;
+    background: var(--color-bg-secondary);
+    z-index: calc(var(--z-modal) + 1);
+    transform: translateX(100%);
+    transition: transform var(--transition-spring);
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--color-border-subtle);
+    box-shadow: -10px 0 40px rgba(0,0,0,0.5);
+  }
+
+  .side-menu-panel.open {
+    transform: translateX(0);
+  }
+
+  .side-menu-panel__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-6);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .side-menu-panel__title {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .side-menu-panel__close {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-subtle);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--text-base);
+    color: var(--color-text-secondary);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+  }
+
+  .side-menu-panel__close:hover {
+    background: var(--color-text-primary);
+    color: var(--color-bg-primary);
+  }
+
+  .side-menu-panel__content {
+    padding: var(--space-6);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .side-menu__link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-lg);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    font-weight: 500;
+  }
+
+  .side-menu__icon {
+    font-size: var(--text-xl);
+  }
+
+  .side-menu__link:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text-primary);
+  }
+
+  .side-menu__link--active {
+    background: var(--color-bg-elevated);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border-subtle);
+  }
+
+  @media (max-width: 768px) {
+    .side-nav-toggle {
+      top: auto;
+      bottom: var(--space-6);
+      right: var(--space-4);
+      transform: translateY(150%);
+    }
+    .side-nav-toggle.visible {
+      transform: translateY(0);
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const toggleBtn = document.getElementById('side-nav-toggle');
+    const panel = document.getElementById('side-menu-panel');
+    const closeBtn = document.getElementById('side-menu-close');
+    const backdrop = document.getElementById('side-nav-backdrop');
+
+    if (!toggleBtn || !panel || !closeBtn || !backdrop) return;
+
+    // Show toggle button on scroll
+    const handleScroll = () => {
+      if (window.scrollY > 300) {
+        toggleBtn.classList.add('visible');
+      } else {
+        toggleBtn.classList.remove('visible');
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    // Open Menu
+    toggleBtn.addEventListener('click', () => {
+      panel.classList.add('open');
+      backdrop.classList.add('open');
+    });
+
+    // Close Menu
+    const closeMenu = () => {
+      panel.classList.remove('open');
+      backdrop.classList.remove('open');
+    };
+
+    closeBtn.addEventListener('click', closeMenu);
+    backdrop.addEventListener('click', closeMenu);
+  });
+</script>

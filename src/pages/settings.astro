@@ -1,0 +1,293 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { createSupabaseClient } from '../lib/supabase';
+import { getPrompts } from '../lib/prompts';
+
+const supabase = createSupabaseClient(Astro.cookies, Astro.request);
+const user = Astro.locals.user;
+
+if (!user) {
+  return Astro.redirect('/login');
+}
+
+// Fetch user profile data (email, role, preferences)
+const { data: profile } = await supabase
+  .from('user_profiles')
+  .select('*')
+  .eq('id', user.id)
+  .single();
+
+let activeTab = 'profile';
+
+if (Astro.request.method === "POST") {
+  const formData = await Astro.request.formData();
+  
+  if (formData.has('update_preferences')) {
+    activeTab = 'settings';
+    const preferences = formData.getAll('preferences').map(String);
+    
+    try {
+      await supabase
+        .from('user_profiles')
+        .update({ preferences })
+        .eq('id', user.id);
+      
+      Astro.cookies.set('has_preferences', 'true', { path: '/' });
+      // Update local profile object so the UI reflects changes immediately
+      if (profile) profile.preferences = preferences;
+    } catch (e) {
+      console.error('Error saving preferences:', e);
+    }
+  } else if (formData.has('logout')) {
+    return Astro.redirect('/api/auth/logout');
+  }
+}
+
+// Fetch real categories and an image for each (for the settings tab)
+const allPrompts = await getPrompts();
+const categoryMap = new Map();
+
+for (const p of allPrompts) {
+  if (p.category && !categoryMap.has(p.category)) {
+    categoryMap.set(p.category, {
+      id: p.category,
+      name: p.category,
+      image: p.images[0] || 'https://picsum.photos/seed/default/400/300'
+    });
+  }
+}
+
+const categories = Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+const userPreferences = profile?.preferences || [];
+---
+
+<BaseLayout title="My Profile" description="Manage your Prompster profile and preferences.">
+  <Header slot="header" />
+
+  <div class="container" style="max-width: 900px; margin: calc(var(--header-height) + 3rem) auto 5rem; padding: 0 var(--space-4);">
+    <div style="margin-bottom: var(--space-4);">
+      <a href="/profile" class="detail-page__back" style="color: var(--color-text-secondary); text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; transition: color 0.2s;" onmouseover="this.style.color='var(--color-text-primary)'" onmouseout="this.style.color='var(--color-text-secondary)'">
+        ← Back to Profile
+      </a>
+    </div>
+    
+    <div class="glass-card" style="border-radius: var(--radius-2xl); overflow: hidden; padding: var(--space-8);">
+      <div style="text-align: center; margin-bottom: 3rem;">
+        <h2 style="font-size: var(--text-2xl); font-weight: 700; margin-bottom: 0.5rem;">Update Preferences</h2>
+        <p style="color: var(--color-text-secondary);">
+          Tailor your "For You" feed by selecting your favorite categories.
+        </p>
+      </div>
+      
+      <form id="preferences-form" method="POST">
+        <input type="hidden" name="update_preferences" value="true" />
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+          {categories.map((cat) => {
+            const isChecked = userPreferences.includes(cat.id);
+            return (
+              <label class="category-card" style="position: relative; cursor: pointer; border-radius: var(--radius-2xl); overflow: hidden; display: block; aspect-ratio: 1/1; box-shadow: var(--shadow-sm); background: var(--color-bg-secondary);">
+                <input 
+                  type="checkbox" 
+                  name="preferences" 
+                  value={cat.id} 
+                  class="category-checkbox sr-only" 
+                  checked={isChecked}
+                />
+                <img 
+                  src={cat.image} 
+                  alt={cat.name} 
+                  class="category-img"
+                  style="width: 100%; height: 100%; object-fit: cover; opacity: 0.9;" 
+                />
+                
+                <div class="category-overlay" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 3px solid transparent; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); background: rgba(0,0,0,0.2);">
+                  
+                  <!-- Animated Huge Checkmark -->
+                  <div class="category-check-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                  </div>
+
+                  <!-- Frosted Glass Pill for Name -->
+                  <div class="category-name-pill" style="margin-top: auto; margin-bottom: 2rem; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1); padding: 0.5rem 1.25rem; border-radius: var(--radius-full); transition: transform 0.3s ease;">
+                    <span style="color: white; font-weight: 700; font-size: var(--text-base); text-transform: capitalize; letter-spacing: 0.5px;">{cat.name}</span>
+                  </div>
+                </div>
+              </label>
+            );
+          })}
+        </div>
+
+        <div style="text-align: center; display: flex; justify-content: center;">
+          <button type="submit" class="btn btn--primary" id="save-btn" disabled style="padding: 1rem 3rem; font-size: var(--text-lg); font-weight: 700; display: flex; align-items: center; gap: 0.5rem; border-radius: var(--radius-full); opacity: 0.5; cursor: not-allowed;">
+            <span class="btn-text">Save Changes</span>
+            <span class="btn-spinner" style="display: none;">
+              <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="animation: spin 0.8s linear infinite; color: var(--color-bg-primary);">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="31.4 31.4" stroke-linecap="round" />
+              </svg>
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <Footer slot="footer" />
+</BaseLayout>
+
+<style>
+  .profile-tab-btn {
+    flex: 1;
+    padding: var(--space-4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    font-size: var(--text-base);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+  }
+
+  .profile-tab-btn:hover {
+    color: var(--color-text-primary);
+    background: rgba(255,255,255,0.02);
+  }
+
+  .profile-tab-btn.active {
+    color: var(--color-accent-primary);
+    border-bottom-color: var(--color-accent-primary);
+    background: rgba(255,255,255,0.05);
+  }
+
+  .tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Premium Category Card Styles */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+
+  .category-card {
+    transition: transform var(--transition-base), box-shadow var(--transition-base);
+  }
+  
+  .category-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+  }
+
+  .category-img {
+    transition: all 0.4s ease;
+  }
+
+  .category-checkbox:checked ~ .category-overlay {
+    border-color: var(--color-accent-blue);
+    background: rgba(0,0,0,0.6);
+    box-shadow: inset 0 0 0 3px var(--color-accent-blue), 0 0 30px rgba(59, 130, 246, 0.4);
+  }
+
+  .category-checkbox:checked ~ .category-img {
+    transform: scale(0.9);
+    filter: blur(4px) brightness(0.4);
+  }
+
+  /* The Checkmark Icon */
+  .category-check-icon {
+    width: 64px;
+    height: 64px;
+    background: var(--color-accent-blue);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transform: scale(0.5) translateY(20px);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.5);
+    margin-top: auto;
+  }
+
+  .category-checkbox:checked ~ .category-overlay .category-check-icon {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+  /* The Glass Pill */
+  .category-checkbox:checked ~ .category-overlay .category-name-pill {
+    transform: translateY(10px);
+    background: rgba(59, 130, 246, 0.8);
+    border-color: rgba(255,255,255,0.3);
+  }
+
+  /* Interactive Click "Press" effect */
+  .category-card:active {
+    transform: scale(0.95);
+  }
+</style>
+
+<script is:inline>
+  const form = document.getElementById('preferences-form');
+  const saveBtn = document.getElementById('save-btn');
+  const btnText = saveBtn?.querySelector('.btn-text');
+  const btnSpinner = saveBtn?.querySelector('.btn-spinner');
+  const checkboxes = document.querySelectorAll('.category-checkbox');
+
+  // Store initial state
+  const initialState = Array.from(checkboxes).map(cb => cb.checked);
+
+  function updateSaveButton() {
+    const isChanged = Array.from(checkboxes).some((cb, index) => cb.checked !== initialState[index]);
+    
+    if (isChanged && saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.style.opacity = '1';
+      saveBtn.style.cursor = 'pointer';
+    } else if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.style.opacity = '0.5';
+      saveBtn.style.cursor = 'not-allowed';
+    }
+  }
+
+  checkboxes.forEach(cb => {
+    cb.addEventListener('change', updateSaveButton);
+  });
+
+  if (form && saveBtn && btnText && btnSpinner) {
+    form.addEventListener('submit', () => {
+      btnText.textContent = 'Saving...';
+      btnSpinner.style.display = 'inline-flex';
+      saveBtn.style.opacity = '0.7';
+    });
+  }
+</script>
+
+

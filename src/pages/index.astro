@@ -1,0 +1,459 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import PromptCard from "../components/PromptCard.astro";
+import SkeletonCard from "../components/SkeletonCard.astro";
+import SideNav from "../components/SideNav.astro";
+import { getPaginatedPrompts, getCategories } from "../lib/prompts";
+import { createSupabaseClient } from "../lib/supabase";
+
+const url = new URL(Astro.request.url);
+const category = url.searchParams.get("category") || undefined;
+const feed = url.searchParams.get("feed") || undefined;
+
+const supabase = createSupabaseClient(Astro.cookies, Astro.request);
+
+// 1. Kick off independent category fetch immediately
+const categoriesPromise = getCategories();
+
+// 2. Sequential Auth & Profile fetching
+const user = Astro.locals.user;
+
+let preferences: string[] | undefined = undefined;
+if (user) {
+  const { data: profile } = await supabase
+    .from("user_profiles")
+    .select("preferences")
+    .eq("id", user.id)
+    .single();
+
+  if (profile && profile.preferences && profile.preferences.length > 0) {
+    if (profile.preferences.length === 1 && profile.preferences[0] === 'skipped') {
+      preferences = undefined; // Don't enforce personalized feed for skipped users
+    } else {
+      preferences = profile.preferences;
+    }
+  }
+}
+
+// Logic for feed vs category
+let filterCategory: string | string[] | undefined = undefined;
+let activeCategory = "all";
+
+if (category) {
+  filterCategory = category;
+  activeCategory = category.toLowerCase();
+} else if (feed === "personalized" || (user && preferences && feed !== "all")) {
+  filterCategory = preferences;
+  activeCategory = "personalized";
+}
+
+// 3. Await the dependent prompts fetch and the independent categories fetch in parallel
+const [{ data: prompts, hasMore, total }, categories] = await Promise.all([
+  getPaginatedPrompts(1, 12, filterCategory),
+  categoriesPromise,
+]);
+
+// Generate some random skeleton heights for the initial view
+const skeletonHeights = Array.from({ length: 12 }).map(() => {
+  const r = Math.random();
+  if (r < 0.3) return "short";
+  if (r < 0.7) return "medium";
+  return "tall";
+});
+---
+
+<BaseLayout title="Prompster — AI Prompt Gallery">
+  <Header slot="header" />
+
+  <section class="hero">
+    <div class="container">
+      <h1 class="hero__title">
+        Discover AI <span class="experimental-prompts"
+          ><img src="/logo.png" alt="P" class="experimental-logo" /><span
+            class="experimental-script">rompts</span
+          ></span
+        >
+      </h1>
+      <p class="hero__subtitle">
+        Browse our curated collection of high-quality AI image generation
+        prompts. Find inspiration, copy prompts, and create stunning AI art.
+      </p>
+    </div>
+  </section>
+
+  <section class="container" id="gallery-section">
+    <!-- Category Filter -->
+    <div class="filter-bar" role="tablist" aria-label="Filter by category">
+      {
+        user && (
+          <a
+            href="/?feed=personalized"
+            class={`filter-btn ${activeCategory === "personalized" ? "filter-btn--active" : ""}`}
+            data-feed="personalized"
+            role="tab"
+            aria-selected={activeCategory === "personalized" ? "true" : "false"}
+          >
+            For You
+          </a>
+        )
+      }
+      <a
+        href="/?feed=all"
+        class={`filter-btn ${activeCategory === "all" ? "filter-btn--active" : ""}`}
+        data-feed="all"
+        role="tab"
+        aria-selected={activeCategory === "all" ? "true" : "false"}
+      >
+        All
+      </a>
+      {
+        categories.map((cat) => (
+          <a
+            href={`/?category=${cat.toLowerCase()}`}
+            class={`filter-btn ${activeCategory === cat.toLowerCase() ? "filter-btn--active" : ""}`}
+            data-category={cat.toLowerCase()}
+            role="tab"
+            aria-selected={
+              activeCategory === cat.toLowerCase() ? "true" : "false"
+            }
+          >
+            {cat}
+          </a>
+        ))
+      }
+    </div>
+
+    <!-- Initial Skeleton Grid (shown while images load) -->
+    <div class="masonry-grid skeleton-grid" id="skeleton-grid">
+      {skeletonHeights.map((h: any) => <SkeletonCard heightClass={h} />)}
+    </div>
+
+    <!-- Masonry Grid (Hidden until loaded, unless cached) -->
+    <div class="masonry-grid prompt-grid stagger-children" id="prompt-grid" data-has-more={hasMore ? "true" : "false"} style="display: none; opacity: 0; transition: opacity 0.5s ease;">
+      {prompts.map((prompt) => <PromptCard prompt={prompt} />)}
+    </div>
+
+    <!-- Infinite scroll sentinel -->
+    {
+      hasMore && (
+        <div class="load-more" id="load-more-sentinel" style="display: none;">
+          <div class="spinner">
+            <div class="spinner__circle" />
+          </div>
+        </div>
+      )
+    }
+
+    {
+      !hasMore && prompts.length > 0 && (
+        <div class="load-more" id="end-message" style="display: none;">
+          <p style="color: var(--color-text-tertiary); font-size: var(--text-sm);">
+            ✨ You've seen all {total} prompts
+          </p>
+        </div>
+      )
+    }
+
+    {
+      prompts.length === 0 && (
+        <div class="empty-state">
+          <div class="empty-state__icon">ðŸ”</div>
+          <h3 class="empty-state__title">No prompts found</h3>
+          <p>Try a different category or check back later.</p>
+        </div>
+      )
+    }
+  </section>
+
+  <!-- Overlay for switching categories -->
+  <div class="gallery-loading-overlay" id="gallery-overlay">
+    <div class="spinner">
+      <div class="spinner__circle"></div>
+    </div>
+  </div>
+
+  <SideNav />
+
+  <Footer slot="footer" />
+</BaseLayout>
+
+<script define:vars={{ userPreferences: preferences }}>
+  function initGallery() {
+    // Dynamically determine the active category on every route change
+    // to avoid closure trap issues with Astro ViewTransitions
+    const activeBtn = document.querySelector('.filter-btn--active') || document.querySelector('.side-menu__link--active');
+    let activeCategory = "all";
+    if (activeBtn) {
+      const href = activeBtn.getAttribute('href');
+      if (href) {
+        const urlParams = new URLSearchParams(href.split('?')[1]);
+        activeCategory = urlParams.get('category') || (href.includes('feed=personalized') ? 'personalized' : 'all');
+      }
+    }
+    // Category filter routing
+    const filterBtns = document.querySelectorAll(".filter-btn, .side-menu__link");
+    filterBtns.forEach((btn) => {
+      // Remove old listeners to prevent duplicates on SPA navigation
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+
+      newBtn.addEventListener("click", (e) => {
+        if (newBtn.classList.contains("filter-btn--active") || newBtn.classList.contains("side-menu__link--active")) {
+          e.preventDefault();
+          return;
+        }
+
+        document.getElementById("gallery-overlay").classList.add("active");
+
+        // Close Side Menu if open
+        const sidePanel = document.getElementById("side-menu-panel");
+        const sideBackdrop = document.getElementById("side-nav-backdrop");
+        if (sidePanel) sidePanel.classList.remove("open");
+        if (sideBackdrop) sideBackdrop.classList.remove("open");
+
+        // Clear cache when explicitly changing categories
+        sessionStorage.removeItem(`gallery_html_${activeCategory}`);
+        sessionStorage.removeItem(`gallery_page_${activeCategory}`);
+        sessionStorage.removeItem("gallery_loaded");
+      });
+    });
+
+    const grid = document.getElementById("prompt-grid");
+    const skeletonGrid = document.getElementById("skeleton-grid");
+    const sentinel = document.getElementById("load-more-sentinel");
+    const endMessage = document.getElementById("end-message");
+
+    if (!grid || !skeletonGrid) return;
+
+    let page = 1;
+    const hasMoreAttr = grid.getAttribute('data-has-more') === 'true';
+    let noMore = !hasMoreAttr;
+
+    // Restore cached infinite scroll DOM if it exists for this category
+    const cachedHtml = sessionStorage.getItem(`gallery_html_${activeCategory}`);
+    const cachedPage = sessionStorage.getItem(`gallery_page_${activeCategory}`);
+    const isCached = sessionStorage.getItem("gallery_loaded");
+
+    if (cachedHtml && cachedPage) {
+      grid.innerHTML = cachedHtml;
+      page = parseInt(cachedPage, 10);
+    }
+
+    function showGrid() {
+      skeletonGrid.style.display = "none";
+      grid.style.display = "block";
+      void grid.offsetWidth; // Trigger reflow
+      grid.style.opacity = "1";
+
+      if (sentinel && !noMore) sentinel.style.display = "flex";
+      if (endMessage && noMore) endMessage.style.display = "flex";
+
+      sessionStorage.setItem("gallery_loaded", "true");
+    }
+
+    // Show grid immediately. Cards have their own individual shimmering skeletons and min-heights 
+    // so they won't collapse, giving a much faster perceived load time.
+    showGrid();
+
+    // Assign true chronological index so we never lose track during sorting
+    Array.from(grid.children).forEach((child, i) => {
+      if (!child.hasAttribute('data-index')) {
+        child.setAttribute('data-index', i);
+      }
+    });
+
+    // Mathematical trick to force CSS column-count to read left-to-right, row-by-row
+    function applyMasonryOrder() {
+      if (!grid) return;
+      let cols = 4;
+      if (window.innerWidth <= 480) cols = 2;
+      else if (window.innerWidth <= 768) cols = 2;
+      else if (window.innerWidth <= 1200) cols = 3;
+
+      let items = Array.from(grid.children);
+      
+      // Sort items back to their true chronological order
+      items.sort((a, b) => parseInt(a.getAttribute('data-index')) - parseInt(b.getAttribute('data-index')));
+
+      const out = [];
+      const itemsPerCol = Math.ceil(items.length / cols);
+      
+      for (let c = 0; c < cols; c++) {
+        for (let i = 0; i < itemsPerCol; i++) {
+          const idx = i * cols + c;
+          if (idx < items.length) {
+            out.push(items[idx]);
+          }
+        }
+      }
+      
+      // Detach and reattach in mathematically perfect order for columns
+      out.forEach(item => grid.appendChild(item));
+    }
+
+    // Apply immediately and on resize
+    applyMasonryOrder();
+    window.addEventListener('resize', applyMasonryOrder);
+
+    // Infinite scroll
+    if (!noMore) {
+      let loading = false;
+
+      if (sentinel) {
+        const observer = new IntersectionObserver(
+          async (entries) => {
+            const entry = entries[0];
+            if (entry.isIntersecting && !loading && !noMore) {
+              loading = true;
+              page++;
+
+              // Show loading state on sentinel if desired, but fetch is usually fast
+              try {
+                let apiUrl = `/api/prompts?page=${page}&limit=12`;
+                if (activeCategory === "personalized" && preferences) {
+                  apiUrl += `&feed=personalized&preferences=${encodeURIComponent(preferences.join(","))}`;
+                } else if (
+                  activeCategory !== "all" &&
+                  activeCategory !== "personalized"
+                ) {
+                  apiUrl += `&category=${activeCategory}`;
+                }
+
+                const response = await fetch(apiUrl);
+                const result = await response.json();
+
+                if (result.data && result.data.length > 0) {
+                  let currentCount = grid.children.length;
+                  const fragment = document.createDocumentFragment();
+                  result.data.forEach((prompt) => {
+                    const card = document.createElement("a");
+                    card.setAttribute('data-index', currentCount++);
+                    card.href = `/prompt/${prompt.slug}`;
+                    card.className = "prompt-card animate-fade-in-up";
+                    card.id = `card-${prompt.id}`;
+                    card.setAttribute("data-astro-prefetch", "hover"); // Dynamic prefetch
+
+                    const imgUrl =
+                      prompt.images[0] ||
+                      "https://picsum.photos/seed/default/800/600";
+                    const tagsHtml = prompt.tags
+                      ? prompt.tags
+                          .slice(0, 3)
+                          .map(
+                            (tag) => `<span class="tag-badge">#${tag}</span>`,
+                          )
+                          .join("")
+                      : "";
+
+                    // When image loads, just remove skeleton
+                    card.innerHTML = `
+                      <div class="prompt-card__image-wrap skeleton">
+                        <img src="${imgUrl}" alt="${prompt.title}" class="prompt-card__image" decoding="async" onload="this.parentElement.classList.remove('skeleton')" />
+                        
+                        <div class="prompt-card__top-actions">
+                          <button class="favorite-btn" data-prompt-id="${prompt.id}" aria-label="Save to Favourites">
+                            <svg class="heart-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                          </button>
+                        </div>
+
+                        <div class="prompt-card__overlay">
+                          <span class="prompt-card__category">${prompt.category || ""}</span>
+                          <h3 class="prompt-card__title">${prompt.title || ""}</h3>
+                          <div class="prompt-card__tags">
+                            ${tagsHtml}
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                    fragment.appendChild(card);
+                  });
+                  grid.appendChild(fragment);
+
+                  // Re-apply mathematical sorting so new items fall into the correct columns
+                  applyMasonryOrder();
+
+                  // Bind favourite buttons for newly appended cards
+                  if (typeof window.initFavourites === 'function') {
+                    window.initFavourites();
+                  }
+
+                  // Cache the updated DOM state for instant back navigation
+                  sessionStorage.setItem(
+                    `gallery_html_${activeCategory}`,
+                    grid.innerHTML,
+                  );
+                  sessionStorage.setItem(
+                    `gallery_page_${activeCategory}`,
+                    page.toString(),
+                  );
+                }
+
+                if (!result.hasMore) {
+                  noMore = true;
+                  sentinel.style.display = "none";
+                  if (endMessage) {
+                    endMessage.style.display = "flex";
+                    endMessage.innerHTML = `
+                      <p style="color: var(--color-text-tertiary); font-size: var(--text-sm);">
+                        ✨ You've seen all ${result.total} prompts
+                      </p>
+                    `;
+                  }
+                  observer.disconnect();
+                }
+              } catch (err) {
+                console.error("Failed to load more prompts:", err);
+              }
+
+              loading = false;
+            }
+          },
+          { rootMargin: "400px" },
+        );
+
+        observer.observe(sentinel);
+      }
+    }
+  }
+
+  // Hook into Astro's SPA lifecycle instead of DOMContentLoaded
+  document.addEventListener("astro:page-load", initGallery);
+</script>
+
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Unbounded:wght@800&display=swap");
+
+  .hero__title {
+    font-family: "Unbounded", sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  .experimental-prompts {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.1rem;
+    vertical-align: middle;
+  }
+
+  .experimental-logo {
+    height: 1.9em;
+    width: auto;
+    display: inline-block;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+    margin-right: -0.05em;
+  }
+
+  .experimental-script {
+    font-family: "Dancing Script", cursive;
+    font-size: 1.1em; /* Adjusted slightly so the cursive script optically matches the sans-serif height */
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-accent-primary, #60a5fa);
+    padding-bottom: 0.1em;
+    margin-left: -0.05em;
+  }
+</style>

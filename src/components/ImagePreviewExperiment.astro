@@ -1,0 +1,94 @@
+---
+// Experimental Image Preview Tooltip
+// Display an enlarged image in a rounded container when hovering over card images.
+---
+
+<div id="image-preview-tooltip" class="image-preview-tooltip">
+  <img id="image-preview-tooltip-img" src="" alt="Preview" />
+</div>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const tooltip = document.getElementById('image-preview-tooltip');
+    const tooltipImg = document.getElementById('image-preview-tooltip-img') as HTMLImageElement;
+    if (!tooltip || !tooltipImg) return;
+
+    const triggers = document.querySelectorAll('.preview-trigger');
+
+    const handleMouseMove = (e: MouseEvent) => {
+      // Offset slightly from cursor so it doesn't block the pointer
+      let x = e.clientX + 20;
+      let y = e.clientY + 20;
+      
+      // Ensure it doesn't go off screen
+      if (x + tooltip.offsetWidth > window.innerWidth) {
+        x = window.innerWidth - tooltip.offsetWidth - 20;
+      }
+      if (y + tooltip.offsetHeight > window.innerHeight) {
+        y = window.innerHeight - tooltip.offsetHeight - 20;
+      }
+
+      tooltip.style.left = `${x}px`;
+      tooltip.style.top = `${y}px`;
+    };
+
+    triggers.forEach(trigger => {
+      trigger.addEventListener('mouseenter', (e) => {
+        // Prevent triggering on mobile/touch devices
+        if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+        
+        const src = (trigger as HTMLElement).getAttribute('data-preview');
+        if (src) {
+          tooltipImg.src = src;
+          tooltip.classList.add('visible');
+          
+          let x = (e as MouseEvent).clientX + 20;
+          let y = (e as MouseEvent).clientY + 20;
+          tooltip.style.left = `${x}px`;
+          tooltip.style.top = `${y}px`;
+          
+          document.addEventListener('mousemove', handleMouseMove);
+        }
+      });
+
+      trigger.addEventListener('mouseleave', () => {
+        tooltip.classList.remove('visible');
+        document.removeEventListener('mousemove', handleMouseMove);
+      });
+    });
+  });
+</script>
+
+<style>
+  .image-preview-tooltip {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    border-radius: var(--radius-2xl);
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    background: var(--color-bg-elevated);
+    width: 400px;
+  }
+
+  .image-preview-tooltip.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .image-preview-tooltip img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+
+  @media (hover: none) or (pointer: coarse) {
+    .image-preview-tooltip {
+      display: none !important;
+    }
+  }
+</style>

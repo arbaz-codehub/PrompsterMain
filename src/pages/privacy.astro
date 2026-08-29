@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout title="Privacy Policy — Prompster" description="Privacy Policy for Prompster users.">
+  <Header slot="header" />
+  
+  <main class="container page-content" style="max-width: 800px; padding-top: calc(var(--header-height) + 4rem); padding-bottom: 6rem; line-height: 1.8;">
+    <h1 style="font-size: var(--text-3xl); font-weight: 800; margin-bottom: 2rem;">Privacy Policy</h1>
+    <p style="color: var(--color-text-secondary); margin-bottom: 2rem;">Last updated: August 29, 2026</p>
+
+    <div class="glass-card" style="padding: 2.5rem; border-radius: var(--radius-2xl);">
+      <h2 style="font-size: var(--text-xl); font-weight: 700; margin-top: 0; margin-bottom: 1rem;">1. Information We Collect</h2>
+      <p style="margin-bottom: 1.5rem;">We collect information you provide directly to us, such as your name, email address, and preferences when you create an account, sign up for a workshop, or contact support.</p>
+
+      <h2 style="font-size: var(--text-xl); font-weight: 700; margin-bottom: 1rem;">2. How We Use Your Information</h2>
+      <p style="margin-bottom: 1.5rem;">We use your information to provide, maintain, and improve our services. This includes processing payments, sending workshop invites, and personalizing your feed based on your selected preferences.</p>
+
+      <h2 style="font-size: var(--text-xl); font-weight: 700; margin-bottom: 1rem;">3. Data Security</h2>
+      <p style="margin-bottom: 1.5rem;">We implement strict security measures to protect your personal data. Payment information is securely processed by Cashfree and is never stored on our own servers.</p>
+
+      <h2 style="font-size: var(--text-xl); font-weight: 700; margin-bottom: 1rem;">4. Third-Party Services</h2>
+      <p style="margin-bottom: 1.5rem;">We may share information with third-party vendors (such as email providers and payment gateways) strictly to facilitate our services. We do not sell your personal data.</p>
+    </div>
+  </main>
+
+  <Footer slot="footer" />
+</BaseLayout>

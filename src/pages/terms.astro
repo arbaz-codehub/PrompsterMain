@@ -1,0 +1,33 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout title="Terms and Conditions — Prompster" description="Terms and Conditions for using Prompster.">
+  <Header slot="header" />
+  
+  <main class="container page-content" style="max-width: 800px; padding-top: calc(var(--header-height) + 4rem); padding-bottom: 6rem; line-height: 1.8;">
+    <h1 style="font-size: var(--text-3xl); font-weight: 800; margin-bottom: 2rem;">Terms and Conditions</h1>
+    <p style="color: var(--color-text-secondary); margin-bottom: 2rem;">Last updated: August 29, 2026</p>
+
+    <div class="glass-card" style="padding: 2.5rem; border-radius: var(--radius-2xl);">
+      <h2 style="font-size: var(--text-xl); font-weight: 700; margin-top: 0; margin-bottom: 1rem;">1. Introduction</h2>
+      <p style="margin-bottom: 1.5rem;">Welcome to Prompster. These Terms and Conditions govern your use of our website and services, including AI teaching workshops and digital products. By accessing our platform, you agree to be bound by these terms.</p>
+
+      <h2 style="font-size: var(--text-xl); font-weight: 700; margin-bottom: 1rem;">2. Services Provided</h2>
+      <p style="margin-bottom: 1.5rem;">Prompster offers digital content, community tools, and paid AI workshops. We reserve the right to modify or discontinue any service with or without notice to the user.</p>
+
+      <h2 style="font-size: var(--text-xl); font-weight: 700; margin-bottom: 1rem;">3. User Accounts</h2>
+      <p style="margin-bottom: 1.5rem;">You must provide accurate information when creating an account. You are responsible for safeguarding your password and any activities or actions under your account.</p>
+
+      <h2 style="font-size: var(--text-xl); font-weight: 700; margin-bottom: 1rem;">4. Payments & Billing</h2>
+      <p style="margin-bottom: 1.5rem;">Payments for workshops and products are processed securely via third-party payment gateways (e.g., Cashfree). All transactions are final unless specified in our Refund Policy.</p>
+
+      <h2 style="font-size: var(--text-xl); font-weight: 700; margin-bottom: 1rem;">5. Intellectual Property</h2>
+      <p style="margin-bottom: 1.5rem;">All materials, including course content, prompts, and website design, are the intellectual property of Prompster and may not be copied or reproduced without explicit permission.</p>
+    </div>
+  </main>
+
+  <Footer slot="footer" />
+</BaseLayout>

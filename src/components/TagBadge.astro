@@ -1,0 +1,16 @@
+---
+interface Props {
+  tag: string;
+  category?: string;
+}
+
+const { tag, category = '' } = Astro.props;
+
+const categoryClass = category
+  ? `tag-badge--${category.toLowerCase().replace(/\s+/g, '-')}`
+  : '';
+---
+
+<span class={`tag-badge ${categoryClass}`}>
+  {tag}
+</span>

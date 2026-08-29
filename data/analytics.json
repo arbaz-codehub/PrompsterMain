@@ -1,0 +1,255 @@
+{
+  "totalVisitors": 36,
+  "activeVisitors": 0,
+  "monthlyVisitors": [
+    {
+      "month": "2026-08",
+      "count": 36
+    }
+  ],
+  "sessions": [
+    {
+      "sessionId": "mt5k0d7fao1rt0fz",
+      "startTime": "2026-08-23T08:37:18.413Z",
+      "lastSeen": "2026-08-24T05:35:31.430Z",
+      "pages": [
+        "/",
+        "/login",
+        "/onboarding",
+        "/profile"
+      ]
+    },
+    {
+      "sessionId": "mt6uifnr79gmxxos",
+      "startTime": "2026-08-24T06:19:03.558Z",
+      "lastSeen": "2026-08-24T06:19:16.479Z",
+      "pages": [
+        "/",
+        "/login",
+        "/signup"
+      ]
+    },
+    {
+      "sessionId": "mt6uj666vx482vd4",
+      "startTime": "2026-08-24T06:19:37.866Z",
+      "lastSeen": "2026-08-24T06:44:56.233Z",
+      "pages": [
+        "/",
+        "/login",
+        "/signup",
+        "/onboarding",
+        "/prompt/vintage-astronaut",
+        "/profile",
+        "/prompt/floating-island-paradise"
+      ]
+    },
+    {
+      "sessionId": "mt6vg3kqvs3of9zm",
+      "startTime": "2026-08-24T06:45:14.421Z",
+      "lastSeen": "2026-08-24T11:26:36.555Z",
+      "pages": [
+        "/",
+        "/prompt/steampunk-clockwork-city",
+        "/prompt/warrior-princess-armor",
+        "/prompt/geometric-dreamscape",
+        "/prompt/northern-lights-cabin",
+        "/profile",
+        "/prompt/mountain-sunrise-panorama"
+      ]
+    },
+    {
+      "sessionId": "mt74vtofl5idkx5r",
+      "startTime": "2026-08-24T11:09:24.611Z",
+      "lastSeen": "2026-08-24T16:47:21.383Z",
+      "pages": [
+        "/",
+        "/tools",
+        "/marketplace",
+        "/resources",
+        "/profile"
+      ]
+    },
+    {
+      "sessionId": "mt79oahcc5c5pyj6",
+      "startTime": "2026-08-24T13:23:31.908Z",
+      "lastSeen": "2026-08-24T16:47:23.375Z",
+      "pages": [
+        "/",
+        "/login"
+      ]
+    },
+    {
+      "sessionId": "mt79obka8pcao8ju",
+      "startTime": "2026-08-24T13:23:33.785Z",
+      "lastSeen": "2026-08-24T14:01:36.136Z",
+      "pages": [
+        "/",
+        "/marketplace",
+        "/tools",
+        "/prompt/abstract-liquid-metal",
+        "/resources",
+        "/login"
+      ]
+    },
+    {
+      "sessionId": "mt7gylx2n43v4to0",
+      "startTime": "2026-08-24T16:47:31.274Z",
+      "lastSeen": "2026-08-24T17:08:55.567Z",
+      "pages": [
+        "/",
+        "/login"
+      ]
+    },
+    {
+      "sessionId": "mt7hrsxsgo7paapv",
+      "startTime": "2026-08-24T17:10:12.449Z",
+      "lastSeen": "2026-08-24T17:10:21.330Z",
+      "pages": [
+        "/",
+        "/login"
+      ]
+    },
+    {
+      "sessionId": "mt7hsmw7odcqwxkn",
+      "startTime": "2026-08-24T17:10:51.226Z",
+      "lastSeen": "2026-08-24T17:10:51.226Z",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "sessionId": "mt7hssfc3lc083y1",
+      "startTime": "2026-08-24T17:10:58.892Z",
+      "lastSeen": "2026-08-24T17:19:27.212Z",
+      "pages": [
+        "/",
+        "/login"
+      ]
+    },
+    {
+      "sessionId": "mt7i312u80hemmjp",
+      "startTime": "2026-08-24T17:18:56.731Z",
+      "lastSeen": "2026-08-24T17:30:38.970Z",
+      "pages": [
+        "/login",
+        "/"
+      ]
+    },
+    {
+      "sessionId": "mt7i3sr1ac2iotn8",
+      "startTime": "2026-08-24T17:19:32.100Z",
+      "lastSeen": "2026-08-24T17:27:31.431Z",
+      "pages": [
+        "/",
+        "/login"
+      ]
+    },
+    {
+      "sessionId": "mt7iiab5nghojlle",
+      "startTime": "2026-08-24T17:30:47.342Z",
+      "lastSeen": "2026-08-24T17:30:47.342Z",
+      "pages": [
+        "/login"
+      ]
+    },
+    {
+      "sessionId": "mt7iif7oz6fd4888",
+      "startTime": "2026-08-24T17:30:53.705Z",
+      "lastSeen": "2026-08-24T17:30:53.705Z",
+      "pages": [
+        "/login"
+      ]
+    },
+    {
+      "sessionId": "mt7iijkkfjztjvmi",
+      "startTime": "2026-08-24T17:30:59.352Z",
+      "lastSeen": "2026-08-24T17:31:06.880Z",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "sessionId": "mt7il1a1ua7mifdx",
+      "startTime": "2026-08-24T17:32:56.280Z",
+      "lastSeen": "2026-08-24T17:35:13.743Z",
+      "pages": [
+        "/login",
+        "/"
+      ]
+    },
+    {
+      "sessionId": "mt7iyn7u1q4ozmmn",
+      "startTime": "2026-08-24T17:43:34.011Z",
+      "lastSeen": "2026-08-24T17:48:29.439Z",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "sessionId": "mt7j29slyrrpkwoo",
+      "startTime": "2026-08-24T17:46:19.797Z",
+      "lastSeen": "2026-08-24T17:46:19.797Z",
+      "pages": [
+        "/login"
+      ]
+    },
+    {
+      "sessionId": "mt7j2dgx7kutozgm",
+      "startTime": "2026-08-24T17:46:24.565Z",
+      "lastSeen": "2026-08-24T17:46:24.565Z",
+      "pages": [
+        "/login"
+      ]
+    },
+    {
+      "sessionId": "mt7j2fqe07qlwldv",
+      "startTime": "2026-08-24T17:46:27.497Z",
+      "lastSeen": "2026-08-24T17:46:27.497Z",
+      "pages": [
+        "/login"
+      ]
+    },
+    {
+      "sessionId": "mt7j4hcqstm7nwcl",
+      "startTime": "2026-08-24T17:48:03.490Z",
+      "lastSeen": "2026-08-24T18:07:13.601Z",
+      "pages": [
+        "/login",
+        "/",
+        "/signup"
+      ]
+    },
+    {
+      "sessionId": "mt7jdnknxiwy50n6",
+      "startTime": "2026-08-24T17:55:11.119Z",
+      "lastSeen": "2026-08-24T17:55:11.119Z",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "sessionId": "mt7jdqwgzqt4rglv",
+      "startTime": "2026-08-24T17:55:15.188Z",
+      "lastSeen": "2026-08-24T17:55:15.188Z",
+      "pages": [
+        "/login"
+      ]
+    },
+    {
+      "sessionId": "mt7jegonk1nxpta0",
+      "startTime": "2026-08-24T17:55:48.854Z",
+      "lastSeen": "2026-08-24T17:55:48.854Z",
+      "pages": [
+        "/"
+      ]
+    },
+    {
+      "sessionId": "mt7jo8u9zi91qaci",
+      "startTime": "2026-08-24T18:03:25.734Z",
+      "lastSeen": "2026-08-24T18:03:25.734Z",
+      "pages": [
+        "/login"
+      ]
+    }
+  ]
+}

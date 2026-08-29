@@ -1,0 +1,21 @@
+---
+// SkeletonCard.astro
+// Animated placeholder for the masonry grid
+
+interface Props {
+  heightClass: string;
+}
+
+const { heightClass = 'medium' } = Astro.props;
+
+const heightMap: Record<string, string> = {
+  'short': 'h-sm',
+  'medium': 'h-md',
+  'tall': 'h-lg'
+};
+
+const mappedClass = heightMap[heightClass] || 'h-md';
+---
+<div class={`skeleton-card ${mappedClass}`}>
+  <div class="skeleton-shimmer"></div>
+</div>

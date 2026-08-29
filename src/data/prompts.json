@@ -1,0 +1,404 @@
+[
+  {
+    "id": "1",
+    "slug": "ethereal-forest-spirit",
+    "title": "Ethereal Forest Spirit",
+    "content": "A luminous forest spirit emerging from ancient oak trees, bioluminescent moss covering the forest floor, volumetric god rays piercing through the canopy, mystical fireflies creating patterns in the air, ultra-detailed digital painting, ethereal atmosphere, 8k resolution, cinematic lighting, by Greg Rutkowski and Alphonse Mucha",
+    "tags": [
+      "fantasy",
+      "nature",
+      "mystical",
+      "bioluminescent",
+      "digital-art"
+    ],
+    "category": "Fantasy",
+    "images": [
+      "https://picsum.photos/seed/forest1/800/1100",
+      "https://picsum.photos/seed/forest2/800/900",
+      "https://picsum.photos/seed/forest3/800/1000"
+    ],
+    "createdAt": "2024-12-01T10:00:00Z",
+    "updatedAt": "2024-12-01T10:00:00Z",
+    "prompts": [
+      "A luminous forest spirit emerging from ancient oak trees, bioluminescent moss covering the forest floor, volumetric god rays piercing through the canopy, mystical fireflies creating patterns in the air, ultra-detailed digital painting, ethereal atmosphere, 8k resolution, cinematic lighting, by Greg Rutkowski and Alphonse Mucha",
+      "A luminous forest spirit emerging from ancient oak trees, bioluminescent moss covering the forest floor, volumetric god rays piercing through the canopy, mystical fireflies creating patterns in the air, ultra-detailed digital painting, ethereal atmosphere, 8k resolution, cinematic lighting, by Greg Rutkowski and Alphonse Mucha, version 2",
+      "A luminous forest spirit emerging from ancient oak trees, bioluminescent moss covering the forest floor, volumetric god rays piercing through the canopy, mystical fireflies creating patterns in the air, ultra-detailed digital painting, ethereal atmosphere, 8k resolution, cinematic lighting, by Greg Rutkowski and Alphonse Mucha, version 3"
+    ]
+  },
+  {
+    "id": "2",
+    "slug": "cyberpunk-tokyo-rain",
+    "title": "Cyberpunk Tokyo in Rain",
+    "content": "Rain-soaked neon streets of futuristic Tokyo at midnight, holographic advertisements reflecting in puddles, a lone figure with a transparent umbrella walking past ramen stalls, volumetric fog, chromatic aberration, cyberpunk aesthetic, blade runner atmosphere, hyper-detailed, octane render, 4k, trending on ArtStation",
+    "tags": [
+      "cyberpunk",
+      "urban",
+      "neon",
+      "rain",
+      "futuristic"
+    ],
+    "category": "Sci-Fi",
+    "images": [
+      "https://picsum.photos/seed/cyber1/800/1200",
+      "https://picsum.photos/seed/cyber2/800/800"
+    ],
+    "createdAt": "2024-12-02T14:30:00Z",
+    "updatedAt": "2024-12-02T14:30:00Z",
+    "prompts": [
+      "Rain-soaked neon streets of futuristic Tokyo at midnight, holographic advertisements reflecting in puddles, a lone figure with a transparent umbrella walking past ramen stalls, volumetric fog, chromatic aberration, cyberpunk aesthetic, blade runner atmosphere, hyper-detailed, octane render, 4k, trending on ArtStation",
+      "Rain-soaked neon streets of futuristic Tokyo at midnight, holographic advertisements reflecting in puddles, a lone figure with a transparent umbrella walking past ramen stalls, volumetric fog, chromatic aberration, cyberpunk aesthetic, blade runner atmosphere, hyper-detailed, octane render, 4k, trending on ArtStation, version 2"
+    ]
+  },
+  {
+    "id": "3",
+    "slug": "renaissance-portrait-modern",
+    "title": "Modern Renaissance Portrait",
+    "content": "A regal portrait in the style of Vermeer, young woman wearing contemporary streetwear and gold jewelry, dramatic chiaroscuro lighting, oil painting texture, rich velvet background in deep burgundy, masterful brushwork, museum quality, photorealistic, 8k resolution",
+    "tags": [
+      "portrait",
+      "renaissance",
+      "modern",
+      "oil-painting",
+      "chiaroscuro"
+    ],
+    "category": "Portraits",
+    "images": [
+      "https://picsum.photos/seed/portrait1/800/1000",
+      "https://picsum.photos/seed/portrait2/800/1100",
+      "https://picsum.photos/seed/portrait3/800/950"
+    ],
+    "createdAt": "2024-12-03T09:15:00Z",
+    "updatedAt": "2024-12-03T09:15:00Z",
+    "prompts": [
+      "A regal portrait in the style of Vermeer, young woman wearing contemporary streetwear and gold jewelry, dramatic chiaroscuro lighting, oil painting texture, rich velvet background in deep burgundy, masterful brushwork, museum quality, photorealistic, 8k resolution",
+      "A regal portrait in the style of Vermeer, young woman wearing contemporary streetwear and gold jewelry, dramatic chiaroscuro lighting, oil painting texture, rich velvet background in deep burgundy, masterful brushwork, museum quality, photorealistic, 8k resolution, version 2",
+      "A regal portrait in the style of Vermeer, young woman wearing contemporary streetwear and gold jewelry, dramatic chiaroscuro lighting, oil painting texture, rich velvet background in deep burgundy, masterful brushwork, museum quality, photorealistic, 8k resolution, version 3"
+    ]
+  },
+  {
+    "id": "4",
+    "slug": "alien-coral-reef",
+    "title": "Alien Coral Reef World",
+    "content": "An alien underwater world with massive bioluminescent coral structures in impossible colors, translucent jellyfish-like creatures floating in formation, crystal clear alien water with visible light refraction, otherworldly color palette of teals, magentas and golds, concept art, matte painting, James Cameron's vision, 8k ultra HD",
+    "tags": [
+      "alien",
+      "underwater",
+      "bioluminescent",
+      "concept-art",
+      "sci-fi"
+    ],
+    "category": "Sci-Fi",
+    "images": [
+      "https://picsum.photos/seed/alien1/800/600",
+      "https://picsum.photos/seed/alien2/800/900"
+    ],
+    "createdAt": "2024-12-04T16:45:00Z",
+    "updatedAt": "2024-12-04T16:45:00Z",
+    "prompts": [
+      "An alien underwater world with massive bioluminescent coral structures in impossible colors, translucent jellyfish-like creatures floating in formation, crystal clear alien water with visible light refraction, otherworldly color palette of teals, magentas and golds, concept art, matte painting, James Cameron's vision, 8k ultra HD",
+      "An alien underwater world with massive bioluminescent coral structures in impossible colors, translucent jellyfish-like creatures floating in formation, crystal clear alien water with visible light refraction, otherworldly color palette of teals, magentas and golds, concept art, matte painting, James Cameron's vision, 8k ultra HD, version 2"
+    ]
+  },
+  {
+    "id": "5",
+    "slug": "mountain-sunrise-panorama",
+    "title": "Alpine Sunrise Panorama",
+    "content": "Breathtaking panoramic view from a mountain summit at golden hour, layers of misty mountains fading into the horizon, wildflowers in the foreground catching the first light, dramatic cloud formations painted in oranges and purples, landscape photography, National Geographic quality, shot on Hasselblad, 16k resolution, f/11",
+    "tags": [
+      "landscape",
+      "mountains",
+      "sunrise",
+      "photography",
+      "panoramic"
+    ],
+    "category": "Landscapes",
+    "images": [
+      "https://picsum.photos/seed/mountain1/800/500",
+      "https://picsum.photos/seed/mountain2/800/550",
+      "https://picsum.photos/seed/mountain3/800/600"
+    ],
+    "createdAt": "2024-12-05T06:00:00Z",
+    "updatedAt": "2024-12-05T06:00:00Z",
+    "prompts": [
+      "Breathtaking panoramic view from a mountain summit at golden hour, layers of misty mountains fading into the horizon, wildflowers in the foreground catching the first light, dramatic cloud formations painted in oranges and purples, landscape photography, National Geographic quality, shot on Hasselblad, 16k resolution, f/11",
+      "Breathtaking panoramic view from a mountain summit at golden hour, layers of misty mountains fading into the horizon, wildflowers in the foreground catching the first light, dramatic cloud formations painted in oranges and purples, landscape photography, National Geographic quality, shot on Hasselblad, 16k resolution, f/11, version 2",
+      "Breathtaking panoramic view from a mountain summit at golden hour, layers of misty mountains fading into the horizon, wildflowers in the foreground catching the first light, dramatic cloud formations painted in oranges and purples, landscape photography, National Geographic quality, shot on Hasselblad, 16k resolution, f/11, version 3"
+    ]
+  },
+  {
+    "id": "6",
+    "slug": "abstract-liquid-metal",
+    "title": "Liquid Metal Abstract",
+    "content": "Abstract composition of flowing liquid mercury and gold, impossible fluid dynamics frozen in time, iridescent reflections showing rainbow spectrums, macro photography perspective, studio lighting with multiple colored gels, sharp focus on metallic surface tension, black background, octane render, 8k, hyperrealistic",
+    "tags": [
+      "abstract",
+      "metallic",
+      "fluid",
+      "macro",
+      "iridescent"
+    ],
+    "category": "Abstract",
+    "images": [
+      "https://picsum.photos/seed/abstract1/800/800",
+      "https://picsum.photos/seed/abstract2/800/750"
+    ],
+    "createdAt": "2024-12-06T11:20:00Z",
+    "updatedAt": "2024-12-06T11:20:00Z",
+    "prompts": [
+      "Abstract composition of flowing liquid mercury and gold, impossible fluid dynamics frozen in time, iridescent reflections showing rainbow spectrums, macro photography perspective, studio lighting with multiple colored gels, sharp focus on metallic surface tension, black background, octane render, 8k, hyperrealistic",
+      "Abstract composition of flowing liquid mercury and gold, impossible fluid dynamics frozen in time, iridescent reflections showing rainbow spectrums, macro photography perspective, studio lighting with multiple colored gels, sharp focus on metallic surface tension, black background, octane render, 8k, hyperrealistic, version 2"
+    ]
+  },
+  {
+    "id": "7",
+    "slug": "dragon-library-keeper",
+    "title": "The Dragon Library Keeper",
+    "content": "An enormous wise dragon curled around towering bookshelves in an infinite library, wearing tiny reading glasses, warm candlelight illuminating thousands of leather-bound books, floating magical orbs providing additional light, intricate scales with embedded gemstones, cozy atmosphere despite the dragon's size, fantasy illustration, detailed, warm color palette, by Justin Gerard",
+    "tags": [
+      "dragon",
+      "library",
+      "fantasy",
+      "cozy",
+      "illustration"
+    ],
+    "category": "Fantasy",
+    "images": [
+      "https://picsum.photos/seed/dragon1/800/1000",
+      "https://picsum.photos/seed/dragon2/800/850",
+      "https://picsum.photos/seed/dragon3/800/950"
+    ],
+    "createdAt": "2024-12-07T13:00:00Z",
+    "updatedAt": "2024-12-07T13:00:00Z",
+    "prompts": [
+      "An enormous wise dragon curled around towering bookshelves in an infinite library, wearing tiny reading glasses, warm candlelight illuminating thousands of leather-bound books, floating magical orbs providing additional light, intricate scales with embedded gemstones, cozy atmosphere despite the dragon's size, fantasy illustration, detailed, warm color palette, by Justin Gerard",
+      "An enormous wise dragon curled around towering bookshelves in an infinite library, wearing tiny reading glasses, warm candlelight illuminating thousands of leather-bound books, floating magical orbs providing additional light, intricate scales with embedded gemstones, cozy atmosphere despite the dragon's size, fantasy illustration, detailed, warm color palette, by Justin Gerard, version 2",
+      "An enormous wise dragon curled around towering bookshelves in an infinite library, wearing tiny reading glasses, warm candlelight illuminating thousands of leather-bound books, floating magical orbs providing additional light, intricate scales with embedded gemstones, cozy atmosphere despite the dragon's size, fantasy illustration, detailed, warm color palette, by Justin Gerard, version 3"
+    ]
+  },
+  {
+    "id": "8",
+    "slug": "vintage-astronaut",
+    "title": "Vintage Astronaut Portrait",
+    "content": "1960s style astronaut portrait with a twist - the helmet visor reflects an alien planet landscape, vintage NASA suit with realistic wear and patches, warm film grain, shot on medium format Kodak Portra 400, nostalgic color grading, shallow depth of field, studio portrait lighting, retro-futurism aesthetic",
+    "tags": [
+      "astronaut",
+      "vintage",
+      "retro",
+      "portrait",
+      "space"
+    ],
+    "category": "Portraits",
+    "images": [
+      "https://picsum.photos/seed/astro1/800/1000",
+      "https://picsum.photos/seed/astro2/800/1100"
+    ],
+    "createdAt": "2024-12-08T15:30:00Z",
+    "updatedAt": "2024-12-08T15:30:00Z",
+    "prompts": [
+      "1960s style astronaut portrait with a twist - the helmet visor reflects an alien planet landscape, vintage NASA suit with realistic wear and patches, warm film grain, shot on medium format Kodak Portra 400, nostalgic color grading, shallow depth of field, studio portrait lighting, retro-futurism aesthetic",
+      "1960s style astronaut portrait with a twist - the helmet visor reflects an alien planet landscape, vintage NASA suit with realistic wear and patches, warm film grain, shot on medium format Kodak Portra 400, nostalgic color grading, shallow depth of field, studio portrait lighting, retro-futurism aesthetic, version 2"
+    ]
+  },
+  {
+    "id": "9",
+    "slug": "geometric-dreamscape",
+    "title": "Geometric Dreamscape",
+    "content": "Impossible geometric structures floating in a pastel void, Escher-inspired architecture with impossible staircases and infinite loops, soft gradient sky from lavender to peach, mathematical precision meets artistic beauty, clean lines, minimalist yet complex, architectural visualization, Unreal Engine 5 render, ambient occlusion, 8k",
+    "tags": [
+      "geometric",
+      "abstract",
+      "escher",
+      "architecture",
+      "minimalist"
+    ],
+    "category": "Abstract",
+    "images": [
+      "https://picsum.photos/seed/geo1/800/900",
+      "https://picsum.photos/seed/geo2/800/850",
+      "https://picsum.photos/seed/geo3/800/800"
+    ],
+    "createdAt": "2024-12-09T08:45:00Z",
+    "updatedAt": "2024-12-09T08:45:00Z",
+    "prompts": [
+      "Impossible geometric structures floating in a pastel void, Escher-inspired architecture with impossible staircases and infinite loops, soft gradient sky from lavender to peach, mathematical precision meets artistic beauty, clean lines, minimalist yet complex, architectural visualization, Unreal Engine 5 render, ambient occlusion, 8k",
+      "Impossible geometric structures floating in a pastel void, Escher-inspired architecture with impossible staircases and infinite loops, soft gradient sky from lavender to peach, mathematical precision meets artistic beauty, clean lines, minimalist yet complex, architectural visualization, Unreal Engine 5 render, ambient occlusion, 8k, version 2",
+      "Impossible geometric structures floating in a pastel void, Escher-inspired architecture with impossible staircases and infinite loops, soft gradient sky from lavender to peach, mathematical precision meets artistic beauty, clean lines, minimalist yet complex, architectural visualization, Unreal Engine 5 render, ambient occlusion, 8k, version 3"
+    ]
+  },
+  {
+    "id": "10",
+    "slug": "enchanted-japanese-garden",
+    "title": "Enchanted Japanese Garden",
+    "content": "A magical Japanese zen garden at twilight, cherry blossom petals floating through the air like pink snow, a perfectly still koi pond reflecting the full moon, stone lanterns emitting warm golden light, ancient maple trees with fiery red leaves, mist rolling over carefully raked gravel patterns, studio ghibli aesthetic, digital painting, serene atmosphere, 4k",
+    "tags": [
+      "japanese",
+      "garden",
+      "zen",
+      "ghibli",
+      "serene"
+    ],
+    "category": "Landscapes",
+    "images": [
+      "https://picsum.photos/seed/japan1/800/700",
+      "https://picsum.photos/seed/japan2/800/900",
+      "https://picsum.photos/seed/japan3/800/650"
+    ],
+    "createdAt": "2024-12-10T17:00:00Z",
+    "updatedAt": "2024-12-10T17:00:00Z",
+    "prompts": [
+      "A magical Japanese zen garden at twilight, cherry blossom petals floating through the air like pink snow, a perfectly still koi pond reflecting the full moon, stone lanterns emitting warm golden light, ancient maple trees with fiery red leaves, mist rolling over carefully raked gravel patterns, studio ghibli aesthetic, digital painting, serene atmosphere, 4k",
+      "A magical Japanese zen garden at twilight, cherry blossom petals floating through the air like pink snow, a perfectly still koi pond reflecting the full moon, stone lanterns emitting warm golden light, ancient maple trees with fiery red leaves, mist rolling over carefully raked gravel patterns, studio ghibli aesthetic, digital painting, serene atmosphere, 4k, version 2",
+      "A magical Japanese zen garden at twilight, cherry blossom petals floating through the air like pink snow, a perfectly still koi pond reflecting the full moon, stone lanterns emitting warm golden light, ancient maple trees with fiery red leaves, mist rolling over carefully raked gravel patterns, studio ghibli aesthetic, digital painting, serene atmosphere, 4k, version 3"
+    ]
+  },
+  {
+    "id": "11",
+    "slug": "steampunk-clockwork-city",
+    "title": "Steampunk Clockwork City",
+    "content": "A sprawling Victorian steampunk metropolis built around an enormous central clockwork mechanism, brass gears and copper pipes visible everywhere, steam rising from ventilation shafts, airships docking at upper-level platforms, warm amber gaslight illumination, intricate mechanical details, panoramic cityscape, concept art for a AAA game, matte painting, 8k resolution",
+    "tags": [
+      "steampunk",
+      "city",
+      "clockwork",
+      "victorian",
+      "concept-art"
+    ],
+    "category": "Sci-Fi",
+    "images": [
+      "https://picsum.photos/seed/steam1/800/550",
+      "https://picsum.photos/seed/steam2/800/700"
+    ],
+    "createdAt": "2024-12-11T12:15:00Z",
+    "updatedAt": "2024-12-11T12:15:00Z",
+    "prompts": [
+      "A sprawling Victorian steampunk metropolis built around an enormous central clockwork mechanism, brass gears and copper pipes visible everywhere, steam rising from ventilation shafts, airships docking at upper-level platforms, warm amber gaslight illumination, intricate mechanical details, panoramic cityscape, concept art for a AAA game, matte painting, 8k resolution",
+      "A sprawling Victorian steampunk metropolis built around an enormous central clockwork mechanism, brass gears and copper pipes visible everywhere, steam rising from ventilation shafts, airships docking at upper-level platforms, warm amber gaslight illumination, intricate mechanical details, panoramic cityscape, concept art for a AAA game, matte painting, 8k resolution, version 2"
+    ]
+  },
+  {
+    "id": "12",
+    "slug": "warrior-princess-armor",
+    "title": "Warrior Princess in Crystal Armor",
+    "content": "A powerful warrior princess wearing crystalline armor that refracts light into rainbow patterns, standing atop a cliff overlooking a vast battlefield, wind blowing her braided silver hair, determination in her eyes, the armor appears grown not forged with organic crystalline structures, epic fantasy character design, full body shot, dynamic pose, artgerm style, 8k",
+    "tags": [
+      "warrior",
+      "fantasy",
+      "character-design",
+      "crystal",
+      "epic"
+    ],
+    "category": "Fantasy",
+    "images": [
+      "https://picsum.photos/seed/warrior1/800/1100",
+      "https://picsum.photos/seed/warrior2/800/1000",
+      "https://picsum.photos/seed/warrior3/800/1050"
+    ],
+    "createdAt": "2024-12-12T09:30:00Z",
+    "updatedAt": "2024-12-12T09:30:00Z",
+    "prompts": [
+      "A powerful warrior princess wearing crystalline armor that refracts light into rainbow patterns, standing atop a cliff overlooking a vast battlefield, wind blowing her braided silver hair, determination in her eyes, the armor appears grown not forged with organic crystalline structures, epic fantasy character design, full body shot, dynamic pose, artgerm style, 8k",
+      "A powerful warrior princess wearing crystalline armor that refracts light into rainbow patterns, standing atop a cliff overlooking a vast battlefield, wind blowing her braided silver hair, determination in her eyes, the armor appears grown not forged with organic crystalline structures, epic fantasy character design, full body shot, dynamic pose, artgerm style, 8k, version 2",
+      "A powerful warrior princess wearing crystalline armor that refracts light into rainbow patterns, standing atop a cliff overlooking a vast battlefield, wind blowing her braided silver hair, determination in her eyes, the armor appears grown not forged with organic crystalline structures, epic fantasy character design, full body shot, dynamic pose, artgerm style, 8k, version 3"
+    ]
+  },
+  {
+    "id": "13",
+    "slug": "northern-lights-cabin",
+    "title": "Aurora Cabin Retreat",
+    "content": "A cozy log cabin nestled in snow-covered Scandinavian wilderness, the northern lights dancing across the entire sky in vibrant greens and purples, warm light glowing from cabin windows, a frozen lake reflecting the aurora, pine trees heavy with fresh snow, long exposure photography style, clear starry night, peaceful solitude, 4k wallpaper quality",
+    "tags": [
+      "aurora",
+      "cabin",
+      "snow",
+      "landscape",
+      "cozy"
+    ],
+    "category": "Landscapes",
+    "images": [
+      "https://picsum.photos/seed/aurora1/800/600",
+      "https://picsum.photos/seed/aurora2/800/700",
+      "https://picsum.photos/seed/aurora3/800/550"
+    ],
+    "createdAt": "2024-12-13T20:00:00Z",
+    "updatedAt": "2024-12-13T20:00:00Z",
+    "prompts": [
+      "A cozy log cabin nestled in snow-covered Scandinavian wilderness, the northern lights dancing across the entire sky in vibrant greens and purples, warm light glowing from cabin windows, a frozen lake reflecting the aurora, pine trees heavy with fresh snow, long exposure photography style, clear starry night, peaceful solitude, 4k wallpaper quality",
+      "A cozy log cabin nestled in snow-covered Scandinavian wilderness, the northern lights dancing across the entire sky in vibrant greens and purples, warm light glowing from cabin windows, a frozen lake reflecting the aurora, pine trees heavy with fresh snow, long exposure photography style, clear starry night, peaceful solitude, 4k wallpaper quality, version 2",
+      "A cozy log cabin nestled in snow-covered Scandinavian wilderness, the northern lights dancing across the entire sky in vibrant greens and purples, warm light glowing from cabin windows, a frozen lake reflecting the aurora, pine trees heavy with fresh snow, long exposure photography style, clear starry night, peaceful solitude, 4k wallpaper quality, version 3"
+    ]
+  },
+  {
+    "id": "14",
+    "slug": "fractal-bloom-macro",
+    "title": "Fractal Bloom Macro",
+    "content": "Extreme macro photography of an impossible fractal flower, each petal contains smaller versions of itself infinitely, dewdrops on petals acting as lenses showing recursive patterns, bioluminescent edges glowing in ultraviolet, fibonacci spiral arrangement, mathematical nature, focus stacking, dark moody background, scientific illustration meets art, 8k",
+    "tags": [
+      "fractal",
+      "macro",
+      "abstract",
+      "mathematical",
+      "bioluminescent"
+    ],
+    "category": "Abstract",
+    "images": [
+      "https://picsum.photos/seed/fractal1/800/850",
+      "https://picsum.photos/seed/fractal2/800/900"
+    ],
+    "createdAt": "2024-12-14T14:45:00Z",
+    "updatedAt": "2024-12-14T14:45:00Z",
+    "prompts": [
+      "Extreme macro photography of an impossible fractal flower, each petal contains smaller versions of itself infinitely, dewdrops on petals acting as lenses showing recursive patterns, bioluminescent edges glowing in ultraviolet, fibonacci spiral arrangement, mathematical nature, focus stacking, dark moody background, scientific illustration meets art, 8k",
+      "Extreme macro photography of an impossible fractal flower, each petal contains smaller versions of itself infinitely, dewdrops on petals acting as lenses showing recursive patterns, bioluminescent edges glowing in ultraviolet, fibonacci spiral arrangement, mathematical nature, focus stacking, dark moody background, scientific illustration meets art, 8k, version 2"
+    ]
+  },
+  {
+    "id": "15",
+    "slug": "film-noir-detective",
+    "title": "Film Noir Detective",
+    "content": "Classic 1940s film noir detective scene, a mysterious figure in a fedora and trench coat standing under a single streetlight, cigarette smoke curling upward, wet cobblestone streets reflecting neon signs, deep shadows and high contrast black and white with selective color on a red neon sign, cinematic composition, dramatic venetian blind shadow patterns, grain, shot on 35mm",
+    "tags": [
+      "noir",
+      "detective",
+      "vintage",
+      "cinematic",
+      "moody"
+    ],
+    "category": "Portraits",
+    "images": [
+      "https://picsum.photos/seed/noir1/800/1050",
+      "https://picsum.photos/seed/noir2/800/950",
+      "https://picsum.photos/seed/noir3/800/1000"
+    ],
+    "createdAt": "2024-12-15T22:30:00Z",
+    "updatedAt": "2024-12-15T22:30:00Z",
+    "prompts": [
+      "Classic 1940s film noir detective scene, a mysterious figure in a fedora and trench coat standing under a single streetlight, cigarette smoke curling upward, wet cobblestone streets reflecting neon signs, deep shadows and high contrast black and white with selective color on a red neon sign, cinematic composition, dramatic venetian blind shadow patterns, grain, shot on 35mm",
+      "Classic 1940s film noir detective scene, a mysterious figure in a fedora and trench coat standing under a single streetlight, cigarette smoke curling upward, wet cobblestone streets reflecting neon signs, deep shadows and high contrast black and white with selective color on a red neon sign, cinematic composition, dramatic venetian blind shadow patterns, grain, shot on 35mm, version 2",
+      "Classic 1940s film noir detective scene, a mysterious figure in a fedora and trench coat standing under a single streetlight, cigarette smoke curling upward, wet cobblestone streets reflecting neon signs, deep shadows and high contrast black and white with selective color on a red neon sign, cinematic composition, dramatic venetian blind shadow patterns, grain, shot on 35mm, version 3"
+    ]
+  },
+  {
+    "id": "16",
+    "slug": "floating-island-paradise",
+    "title": "Floating Island Paradise",
+    "content": "A chain of floating islands suspended in a cotton candy sky, each island has its own unique ecosystem - one with a waterfall cascading into the clouds, another with a miniature forest, connected by delicate rope bridges, tiny houses with smoke from chimneys, birds flying between islands, fantasy world-building, whimsical atmosphere, Studio Ghibli inspired, gouache painting style, warm afternoon light",
+    "tags": [
+      "floating-islands",
+      "fantasy",
+      "ghibli",
+      "whimsical",
+      "world-building"
+    ],
+    "category": "Fantasy",
+    "images": [
+      "https://picsum.photos/seed/float1/800/700",
+      "https://picsum.photos/seed/float2/800/800"
+    ],
+    "createdAt": "2024-12-16T10:00:00Z",
+    "updatedAt": "2024-12-16T10:00:00Z",
+    "prompts": [
+      "A chain of floating islands suspended in a cotton candy sky, each island has its own unique ecosystem - one with a waterfall cascading into the clouds, another with a miniature forest, connected by delicate rope bridges, tiny houses with smoke from chimneys, birds flying between islands, fantasy world-building, whimsical atmosphere, Studio Ghibli inspired, gouache painting style, warm afternoon light",
+      "A chain of floating islands suspended in a cotton candy sky, each island has its own unique ecosystem - one with a waterfall cascading into the clouds, another with a miniature forest, connected by delicate rope bridges, tiny houses with smoke from chimneys, birds flying between islands, fantasy world-building, whimsical atmosphere, Studio Ghibli inspired, gouache painting style, warm afternoon light, version 2"
+    ]
+  }
+]

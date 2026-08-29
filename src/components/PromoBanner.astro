@@ -1,0 +1,161 @@
+---
+import { createSupabaseClient } from '../lib/supabase';
+import { Image } from 'astro:assets';
+
+interface Props {
+  location?: string;
+}
+
+const { location = 'global' } = Astro.props;
+
+// Fetch active banner from Supabase
+const supabase = createSupabaseClient(Astro.cookies, Astro.request);
+const { data: banners, error } = await supabase
+  .from('promo_banners')
+  .select('*')
+  .eq('is_active', true)
+  .order('created_at', { ascending: false })
+  .limit(1);
+
+const activeBanner = banners && banners.length > 0 ? banners[0] : null;
+---
+
+{error && (
+  <div style="background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #ef4444; padding: 1rem; border-radius: 8px; margin: 2rem auto; max-width: 800px; text-align: center;">
+    <strong>Supabase Error fetching banners:</strong> {error.message}
+  </div>
+)}
+
+{(!activeBanner && !error) && (
+  <div style="color: #666; text-align: center; margin: 2rem;">No active banners found in database.</div>
+)}
+
+{activeBanner && (
+  <div class="promo-banner-wrapper">
+    <a href={activeBanner.target_url} class="promo-banner" target="_blank" rel="noopener noreferrer">
+      <div class="promo-banner__image-container">
+        <img 
+          src={activeBanner.image_url} 
+          alt={activeBanner.title}
+          class="promo-banner__image"
+        />
+        <div class="promo-banner__overlay">
+          <div class="promo-banner__content">
+            <span class="promo-banner__badge">Sponsored</span>
+            <h3 class="promo-banner__title">{activeBanner.title}</h3>
+            <span class="promo-banner__cta">Explore Now &rarr;</span>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+)}
+
+<style>
+  .promo-banner-wrapper {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+  @media (max-width: 768px) {
+    .promo-banner-wrapper { padding: 0 1rem; }
+  }
+  
+  .promo-banner {
+    display: block;
+    width: 100%;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    text-decoration: none;
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.15));
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    background: var(--color-bg-secondary, #0a0a0a);
+  }
+  
+  .promo-banner:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.2);
+    border-color: var(--color-accent-primary, #ffffff);
+  }
+  
+  .promo-banner__image-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 21 / 9;
+    overflow: hidden;
+  }
+  
+  @media (max-width: 768px) {
+    .promo-banner__image-container { aspect-ratio: 16 / 9; }
+  }
+  
+  .promo-banner__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  
+  .promo-banner:hover .promo-banner__image {
+    transform: scale(1.05);
+  }
+  
+  .promo-banner__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 2rem;
+  }
+  
+  @media (max-width: 768px) {
+    .promo-banner__overlay { padding: 1.5rem; }
+  }
+  
+  .promo-banner__content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .promo-banner__badge {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    color: var(--color-text-secondary, #a3a3a3);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .promo-banner__title {
+    margin: 0;
+    font-family: var(--font-heading, 'Outfit', sans-serif);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.2;
+  }
+  
+  @media (max-width: 768px) {
+    .promo-banner__title { font-size: 1.25rem; }
+  }
+  
+  .promo-banner__cta {
+    color: var(--color-accent-primary, #ffffff);
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+    transition: transform 0.2s;
+  }
+  
+  .promo-banner:hover .promo-banner__cta {
+    transform: translateX(4px);
+  }
+</style>

@@ -1,0 +1,220 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { createSupabaseClient } from '../lib/supabase';
+import { getPrompts } from '../lib/prompts';
+
+const supabase = createSupabaseClient(Astro.cookies, Astro.request);
+const { data: { session } } = await supabase.auth.getSession();
+const user = session?.user ?? null;
+
+if (!user) {
+  return Astro.redirect('/login');
+}
+
+if (Astro.request.method === "POST") {
+  const formData = await Astro.request.formData();
+  
+  if (formData.has('skip')) {
+    try {
+      await supabase
+        .from('user_profiles')
+        .update({ preferences: ['skipped'] })
+        .eq('id', user.id);
+    } catch (e) {
+      console.error('Error saving skip preference:', e);
+    }
+    Astro.cookies.set('skip_onboarding', 'true', { path: '/' });
+    return Astro.redirect('/');
+  }
+
+  const preferences = formData.getAll('preferences').map(String);
+  const name = formData.get('name')?.toString().trim() || null;
+  
+  if (preferences.length > 0) {
+    try {
+      await supabase
+        .from('user_profiles')
+        .update({ preferences, name })
+        .eq('id', user.id);
+      
+      Astro.cookies.set('has_preferences', 'true', { path: '/' });
+      return Astro.redirect('/');
+    } catch (e) {
+      console.error('Error saving preferences:', e);
+    }
+  }
+}
+
+// Fetch real categories and an image for each
+const allPrompts = await getPrompts();
+const categoryMap = new Map();
+
+for (const p of allPrompts) {
+  if (p.category && !categoryMap.has(p.category)) {
+    categoryMap.set(p.category, {
+      id: p.category,
+      name: p.category,
+      image: p.images[0] || 'https://picsum.photos/seed/default/400/300'
+    });
+  }
+}
+
+const categories = Array.from(categoryMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+
+const defaultName = user.user_metadata?.full_name || user.user_metadata?.name || '';
+---
+
+<BaseLayout title="Personalize Your Feed" description="Select your favorite categories to get started.">
+  <Header slot="header" />
+
+  <div class="container" style="max-width: 800px; margin: calc(var(--header-height) + 2rem) auto 4rem; padding: 0;">
+    <div class="glass-card" style="padding: var(--space-8); border-radius: var(--radius-2xl);">
+      <div style="text-align: center; margin-bottom: 3rem;">
+        <h1 style="margin-bottom: 1rem; font-size: var(--text-4xl);">What do you like?</h1>
+        <p style="color: var(--color-text-secondary); font-size: var(--text-lg);">
+          Select 1 or more categories to personalize your Prompster feed.
+        </p>
+      </div>
+      
+      <form id="onboarding-form" method="POST">
+        <div style="margin-bottom: 2.5rem; display: flex; flex-direction: column; align-items: center;">
+          <div style="width: 100%; max-width: 400px; text-align: left;">
+            <label for="name" style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: var(--text-lg);">Your Name</label>
+            <input 
+              type="text" 
+              id="name" 
+              name="name" 
+              required 
+              value={defaultName}
+              style="width: 100%; padding: 0.875rem; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg-secondary); color: var(--color-text); font-size: var(--text-base);"
+              placeholder="How should we call you?"
+            />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+          {categories.map((cat) => (
+            <label class="category-card" style="position: relative; cursor: pointer; border-radius: var(--radius-lg); overflow: hidden; display: block; aspect-ratio: 4/3; box-shadow: var(--shadow-sm);">
+              <input 
+                type="checkbox" 
+                name="preferences" 
+                value={cat.id} 
+                class="category-checkbox sr-only" 
+              />
+              <img 
+                src={cat.image} 
+                alt={cat.name} 
+                style="width: 100%; height: 100%; object-fit: cover; transition: all 0.3s ease; opacity: 0.8;" 
+              />
+              <div class="category-overlay" style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.2) 100%); display: flex; align-items: flex-end; padding: 1rem; border: 3px solid transparent; transition: all 0.2s ease;">
+                <span style="color: white; font-weight: 700; font-size: var(--text-lg); text-transform: capitalize; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">{cat.name}</span>
+              </div>
+              <div class="category-check" style="position: absolute; top: 0.75rem; right: 0.75rem; width: 32px; height: 32px; background: var(--color-accent-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; transform: scale(0.5); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 4px 12px rgba(0,0,0,0.8);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </div>
+            </label>
+          ))}
+        </div>
+
+        <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+          <button type="submit" class="btn btn--primary" id="continue-btn" disabled style="padding: 1rem 4rem; font-size: var(--text-xl); font-weight: 700; opacity: 0.5; cursor: not-allowed; display: flex; align-items: center; gap: 0.5rem; border-radius: var(--radius-full);">
+            <span class="btn-text">Build My Feed</span>
+            <span class="btn-spinner" style="display: none;">
+              <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="animation: spin 0.8s linear infinite; color: var(--color-bg-primary);">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="31.4 31.4" stroke-linecap="round" />
+              </svg>
+            </span>
+          </button>
+          
+          <button type="submit" name="skip" value="true" class="btn btn--ghost" style="font-size: var(--text-base); color: var(--color-text-secondary); margin-top: 0.5rem;">
+            Skip for now
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <Footer slot="footer" />
+</BaseLayout>
+
+<style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+  }
+
+  .category-checkbox:checked ~ .category-overlay {
+    border-color: var(--color-accent-primary);
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 100%);
+  }
+
+  .category-checkbox:checked ~ img {
+    transform: scale(1.1);
+    opacity: 1 !important;
+  }
+
+  .category-checkbox:checked ~ .category-check {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .category-card:hover img {
+    opacity: 1;
+  }
+
+
+  .category-card:hover img {
+    transform: scale(1.05);
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+</style>
+
+<script>
+  const form = document.getElementById('onboarding-form') as HTMLFormElement;
+  const continueBtn = document.getElementById('continue-btn') as HTMLButtonElement;
+  const btnText = continueBtn?.querySelector('.btn-text') as HTMLElement;
+  const btnSpinner = continueBtn?.querySelector('.btn-spinner') as HTMLElement;
+  const checkboxes = document.querySelectorAll('.category-checkbox');
+
+  function updateButtonState() {
+    const checkedCount = document.querySelectorAll('.category-checkbox:checked').length;
+    if (checkedCount > 0) {
+      continueBtn.disabled = false;
+      continueBtn.style.opacity = '1';
+      continueBtn.style.cursor = 'pointer';
+    } else {
+      continueBtn.disabled = true;
+      continueBtn.style.opacity = '0.5';
+      continueBtn.style.cursor = 'not-allowed';
+    }
+  }
+
+  checkboxes.forEach(cb => {
+    cb.addEventListener('change', updateButtonState);
+  });
+
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      // Only show spinner if it's not the skip button
+      if (document.activeElement?.getAttribute('name') !== 'skip') {
+        btnText.textContent = 'Saving...';
+        btnSpinner.style.display = 'inline-flex';
+        continueBtn.style.opacity = '0.7';
+      }
+    });
+  }
+</script>
+

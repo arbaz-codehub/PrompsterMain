@@ -1,0 +1,96 @@
+---
+import { getCategories } from '../lib/prompts';
+
+const categories = await getCategories();
+const currentPath = Astro.url.pathname;
+---
+
+<header class="site-header" id="site-header">
+  <div class="site-header__inner">
+    <a href="/" class="site-header__logo" aria-label="Prompster Home" data-astro-prefetch="load">
+      <img src="/logo.png" alt="Prompster Logo" class="site-header__logo-img" />
+    </a>
+
+    <nav class="site-header__nav" id="main-nav" aria-label="Main navigation">
+      <a href="/" data-astro-prefetch="hover" class={`site-header__link ${currentPath === '/' ? 'site-header__link--active' : ''}`}>
+        Gallery
+      </a>
+      <a href="/marketplace" data-astro-prefetch="hover" class={`site-header__link ${currentPath.startsWith('/marketplace') ? 'site-header__link--active' : ''}`}>
+        Marketplace
+      </a>
+      <a href="/tools" data-astro-prefetch="hover" class={`site-header__link ${currentPath.startsWith('/tools') ? 'site-header__link--active' : ''}`}>
+        Tools
+      </a>
+      <a href="/resources" data-astro-prefetch="hover" class={`site-header__link ${currentPath.startsWith('/resources') ? 'site-header__link--active' : ''}`}>
+        Resources
+      </a>
+      <a href="/contact" data-astro-prefetch="hover" class={`site-header__link ${currentPath === '/contact' ? 'site-header__link--active' : ''}`}>
+        Contact
+      </a>
+      {Astro.locals.user ? (
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <a href="/profile" class="site-header__link" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--color-bg-elevated); border: 1px solid var(--color-border); padding: 0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </a>
+        </div>
+      ) : (
+        <>
+          <a href="/login" class="site-header__link">Log In</a>
+          <a href="/signup" class="btn btn--primary" style="padding: 0.5rem 1rem; margin-left: 1rem;">Sign Up</a>
+        </>
+      )}
+    </nav>
+
+    <button
+      class="site-header__menu-toggle"
+      id="menu-toggle"
+      aria-label="Open navigation menu"
+      aria-expanded="false"
+    >
+      <span id="menu-icon">☰</span>
+    </button>
+  </div>
+</header>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const toggle = document.getElementById('menu-toggle');
+    const nav = document.getElementById('main-nav');
+    const icon = document.getElementById('menu-icon');
+
+    if (toggle && nav && icon) {
+      toggle.addEventListener('click', () => {
+        const isOpen = nav.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', String(isOpen));
+        icon.textContent = isOpen ? '✕' : '☰';
+      });
+
+      nav.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+          nav.classList.remove('open');
+          toggle.setAttribute('aria-expanded', 'false');
+          icon.textContent = '☰';
+        });
+      });
+    }
+  });
+</script>
+
+<style>
+  .site-header__logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+  }
+
+  .site-header__logo-img {
+    height: 50px;
+    width: auto;
+    object-fit: contain;
+  }
+</style>
+

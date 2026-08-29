@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout title="Contact Us — Prompster" description="Get in touch with Prompster for any queries or support.">
+  <Header slot="header" />
+  
+  <main class="container" style="max-width: 800px; padding-top: calc(var(--header-height) + 4rem); padding-bottom: 6rem;">
+    <h1 style="font-size: var(--text-3xl); font-weight: 800; margin-bottom: 1rem;">Contact Us</h1>
+    <p style="color: var(--color-text-secondary); margin-bottom: 3rem; font-size: var(--text-lg);">
+      We're here to help! Whether you have questions about our workshops, digital products, or your account, feel free to reach out.
+    </p>
+
+    <div class="glass-card" style="padding: 2.5rem; border-radius: var(--radius-2xl);">
+      <h2 style="font-size: var(--text-xl); font-weight: 700; margin-bottom: 1rem;">Get in Touch</h2>
+      
+      <div style="margin-bottom: 1.5rem;">
+        <strong style="display: block; color: var(--color-text-muted); font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Email Support</strong>
+        <a href="mailto:prompsterai@gmail.com" style="color: var(--color-accent-primary); font-size: var(--text-lg); text-decoration: none;">prompsterai@gmail.com</a>
+        <p style="color: var(--color-text-secondary); font-size: var(--text-sm); margin-top: 0.5rem;">We typically respond within 24 hours.</p>
+      </div>
+
+      <hr style="border: none; border-top: 1px solid var(--color-border-subtle); margin: 2rem 0;" />
+      
+      <div>
+        <strong style="display: block; color: var(--color-text-muted); font-size: var(--text-sm); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Business Address</strong>
+        <address style="font-style: normal; color: var(--color-text-primary); line-height: 1.6;">
+          Prompster HQ<br>
+          (Operating Remotely)<br>
+          India
+        </address>
+      </div>
+    </div>
+  </main>
+
+  <Footer slot="footer" />
+</BaseLayout>

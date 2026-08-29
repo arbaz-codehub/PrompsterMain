@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<BaseLayout title="Refund & Cancellation Policy — Prompster" description="Refund and cancellation policy for Prompster workshops and products.">
+  <Header slot="header" />
+  
+  <main class="container page-content" style="max-width: 800px; padding-top: calc(var(--header-height) + 4rem); padding-bottom: 6rem; line-height: 1.8;">
+    <h1 style="font-size: var(--text-3xl); font-weight: 800; margin-bottom: 2rem;">Refund & Cancellation Policy</h1>
+    <p style="color: var(--color-text-secondary); margin-bottom: 2rem;">Last updated: August 29, 2026</p>
+
+    <div class="glass-card" style="padding: 2.5rem; border-radius: var(--radius-2xl);">
+      <h2 style="font-size: var(--text-xl); font-weight: 700; margin-top: 0; margin-bottom: 1rem;">1. Workshop Cancellations</h2>
+      <p style="margin-bottom: 1.5rem;">If you are unable to attend a registered workshop, you may request a cancellation up to 48 hours before the scheduled start time for a full refund. Cancellations made within 48 hours of the event are strictly non-refundable.</p>
+
+      <h2 style="font-size: var(--text-xl); font-weight: 700; margin-bottom: 1rem;">2. Digital Products</h2>
+      <p style="margin-bottom: 1.5rem;">Due to the non-returnable nature of digital goods (e.g., prompt bundles, digital assets), all sales of digital products are final. We do not offer refunds once the digital content has been accessed or downloaded.</p>
+
+      <h2 style="font-size: var(--text-xl); font-weight: 700; margin-bottom: 1rem;">3. Workshop Postponements</h2>
+      <p style="margin-bottom: 1.5rem;">In the rare event that Prompster must cancel or reschedule a workshop, all registered attendees will be offered the choice of a full refund or a guaranteed spot on the rescheduled date.</p>
+
+      <h2 style="font-size: var(--text-xl); font-weight: 700; margin-bottom: 1rem;">4. Processing Refunds</h2>
+      <p style="margin-bottom: 1.5rem;">Approved refunds will be processed back to the original method of payment within 5-7 business days. Please contact our support team at <a href="mailto:prompsterai@gmail.com" style="color: var(--color-accent-primary);">prompsterai@gmail.com</a> to initiate a refund request.</p>
+    </div>
+  </main>
+
+  <Footer slot="footer" />
+</BaseLayout>

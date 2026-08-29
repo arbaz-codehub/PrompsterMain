@@ -1,0 +1,295 @@
+---
+import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+
+interface Props {
+  title: string;
+  description?: string;
+  ogImage?: string;
+  canonicalUrl?: string;
+  noIndex?: boolean;
+  publishedTime?: string;
+  modifiedTime?: string;
+}
+
+const {
+  title,
+  description = 'Discover and copy high-quality AI image generation prompts. Browse our curated gallery of stunning AI art prompts for Midjourney, DALL-E, Stable Diffusion and more.',
+  ogImage = '/og-default.jpg',
+  canonicalUrl,
+  noIndex = false,
+  publishedTime,
+  modifiedTime,
+} = Astro.props;
+
+const siteName = 'Prompster';
+const fullTitle = title === siteName ? title : `${title} | ${siteName}`;
+const siteUrl = import.meta.env.SITE_URL || 'https://prompster.art';
+const canonical = canonicalUrl || new URL(Astro.url.pathname, siteUrl).href;
+
+const user = Astro.locals.user;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <!-- Primary Meta -->
+  <title>{fullTitle}</title>
+  <meta name="description" content={description} />
+  <meta name="author" content="Prompster" />
+  {noIndex && <meta name="robots" content="noindex, nofollow" />}
+
+  <!-- Canonical -->
+  <link rel="canonical" href={canonical} />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content={publishedTime ? "article" : "website"} />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:title" content={fullTitle} />
+  <meta property="og:description" content={description} />
+  <meta property="og:image" content={ogImage} />
+  <meta property="og:image:alt" content={title} />
+  <meta property="og:site_name" content={siteName} />
+  {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+  {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@prompster" />
+  <meta name="twitter:creator" content="@prompster" />
+  <meta name="twitter:title" content={fullTitle} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={ogImage} />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  
+  <!-- Preloads -->
+  <link rel="preload" as="image" href="/logo.png" />
+
+  <!-- Preconnect for fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": siteName,
+    "url": siteUrl,
+    "description": description,
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": `${siteUrl}/search?q={search_term_string}`,
+      "query-input": "required name=search_term_string"
+    }
+  })} />
+
+  <ClientRouter />
+
+  <slot name="head" />
+</head>
+<body>
+  <div id="page-progress-bar" class="loading"></div>
+  <slot name="header" />
+  <main id="main-content">
+    <slot />
+  </main>
+  <slot name="footer" />
+  <script>
+    // Global Event Delegation for Favourite Buttons
+    if (!window['__favListenerAttached']) {
+      window['__favListenerAttached'] = true;
+      document.addEventListener('click', async (e) => {
+        const target = e.target;
+        if (!(target instanceof Element)) return;
+        const btn = target.closest('.favorite-btn');
+        if (!btn) return;
+        
+        e.preventDefault(); 
+        e.stopPropagation();
+
+        if (!window.IS_LOGGED_IN) {
+          const modal = document.getElementById('login-modal');
+          if (modal) {
+            modal.style.display = 'flex';
+            setTimeout(() => {
+              modal.style.opacity = '1';
+              const content = modal.querySelector('.modal-content');
+              if (content instanceof HTMLElement) content.style.transform = 'translateY(0)';
+            }, 10);
+          }
+          return;
+        }
+        
+        const id = btn.getAttribute('data-prompt-id');
+        if (!id) return;
+
+        let currentSaved = JSON.parse(localStorage.getItem('favourites') || '[]');
+        const index = currentSaved.indexOf(id);
+        
+        // Optimistic UI Update
+        if (index > -1) {
+          currentSaved.splice(index, 1);
+        } else {
+          currentSaved.push(id);
+          // Pop animation
+          if (btn instanceof HTMLElement) {
+            btn.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+              if (btn instanceof HTMLElement) btn.style.transform = '';
+            }, 200);
+          }
+        }
+        
+        localStorage.setItem('favourites', JSON.stringify(currentSaved));
+        if (typeof window['hydrateDOM'] === 'function') {
+          window['hydrateDOM'](currentSaved);
+        }
+
+        // Cloud Sync
+        try {
+          await fetch('/api/favorites', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ promptId: id })
+          });
+        } catch (err) {
+          console.error('Failed to sync favourite to cloud');
+        }
+      }, { capture: true });
+    }
+
+    // Cloud-Synced Favourites Logic (with Local Cache)
+    window['hydrateDOM'] = function(ids) {
+      document.querySelectorAll('.favorite-btn').forEach(btn => {
+        const id = btn.getAttribute('data-prompt-id');
+        if (id && ids.includes(id)) {
+          btn.classList.add('is-favorite');
+          btn.querySelector('svg')?.setAttribute('fill', 'currentColor');
+          if (btn instanceof HTMLElement) {
+            btn.style.color = 'var(--color-accent-rose)';
+            btn.style.borderColor = 'var(--color-accent-rose)';
+          }
+        } else {
+          btn.classList.remove('is-favorite');
+          btn.querySelector('svg')?.setAttribute('fill', 'none');
+          if (btn instanceof HTMLElement) {
+            btn.style.color = 'white';
+            btn.style.borderColor = 'rgba(255,255,255,0.2)';
+          }
+        }
+      });
+    };
+
+    window['initFavourites'] = async function initFavourites() {
+      // If the user is signed out, ensure no hearts are filled, even if localStorage remains from a previous session
+      if (!window.IS_LOGGED_IN) {
+        window['hydrateDOM']([]);
+        return;
+      }
+
+      // 1. Immediate Hydration from Local Cache (Instant UX)
+      let saved = JSON.parse(localStorage.getItem('favourites') || '[]');
+      window['hydrateDOM'](saved);
+
+      // 3. Background Cloud Sync (Fetch source of truth)
+      try {
+        const res = await fetch('/api/favorites');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.ids) {
+            localStorage.setItem('favourites', JSON.stringify(data.ids));
+            // Rehydrate just in case another device changed the state
+            if (typeof window['hydrateDOM'] === 'function') {
+              window['hydrateDOM'](data.ids);
+            }
+          }
+        }
+      } catch (err) {
+        // Silently fail if offline or logged out, local cache keeps working
+      }
+    }
+
+    // Page Progress Bar Logic
+    document.addEventListener('astro:page-load', () => {
+      const bar = document.getElementById('page-progress-bar');
+      if (bar) {
+        bar.classList.remove('loading');
+        bar.classList.add('complete');
+      }
+      initFavourites();
+    });
+    
+    // Show progress bar on link clicks
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      const link = target.closest('a');
+      if (link instanceof HTMLAnchorElement && link.href && link.href.startsWith(window.location.origin) && !link.hash && link.target !== '_blank') {
+        const bar = document.getElementById('page-progress-bar');
+        if (bar) {
+          bar.classList.remove('complete');
+          bar.classList.add('loading');
+          bar.style.opacity = '1';
+        }
+      }
+    });
+  </script>
+  
+  <script define:vars={{ isLoggedIn: !!user }}>
+    window.IS_LOGGED_IN = isLoggedIn;
+  </script>
+
+  <!-- Unauthenticated Favourites Modal -->
+  <div id="login-modal" style="display: none; opacity: 0; transition: opacity 0.3s ease; z-index: var(--z-modal); position: fixed; inset: 0; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+    <div class="modal-content responsive-login-modal" style="position: relative; background: var(--color-bg-secondary); border: 1px solid rgba(255,255,255,0.1); padding: 2.5rem 2rem; border-radius: var(--radius-2xl); max-width: 400px; width: 90%; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); transform: translateY(20px); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
+      <button aria-label="Close modal" onclick="document.getElementById('login-modal').style.opacity='0'; document.querySelector('#login-modal .modal-content').style.transform='translateY(20px)'; setTimeout(() => document.getElementById('login-modal').style.display='none', 300);" style="position: absolute; top: 1.25rem; right: 1.25rem; background: none; border: none; color: var(--color-text-tertiary); cursor: pointer; padding: 0.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='var(--color-text-primary)';" onmouseout="this.style.background='none'; this.style.color='var(--color-text-tertiary)';">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <img src="/logo.png" alt="Prompster Logo" class="login-modal-logo" style="height: 80px; width: auto; object-fit: contain; margin-bottom: 1.5rem; display: block; margin-left: auto; margin-right: auto;" />
+      <h2 class="login-modal-title" style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.75rem; color: var(--color-text-primary); font-family: 'Unbounded', sans-serif; letter-spacing: -0.02em;">Login Required</h2>
+      <p class="login-modal-text" style="color: var(--color-text-secondary); margin-bottom: 2rem; font-size: 0.95rem; line-height: 1.5;">Login or signup to save and sync your favourites across all devices.</p>
+      <div class="login-modal-buttons" style="display: flex; gap: 1rem; justify-content: center;">
+        <a href="/login" style="padding: 0.75rem 1.5rem; background: var(--color-accent-primary); color: #000; font-weight: 600; border-radius: var(--radius-full); transition: var(--transition-fast); text-decoration: none;">Login / Signup</a>
+      </div>
+    </div>
+  </div>
+
+  <style is:global>
+    @media (max-width: 480px) {
+      .responsive-login-modal {
+        padding: 2rem 1.25rem !important;
+        width: 95% !important;
+      }
+      .login-modal-logo {
+        height: 64px !important;
+        margin-bottom: 1.25rem !important;
+      }
+      .login-modal-title {
+        font-size: 1.25rem !important;
+      }
+      .login-modal-text {
+        font-size: 0.9rem !important;
+        margin-bottom: 1.5rem !important;
+      }
+      .login-modal-buttons {
+        gap: 0.5rem !important;
+      }
+      .login-modal-buttons button,
+      .login-modal-buttons a {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.9rem !important;
+      }
+    }
+  </style>
+</body>
+</html>
