@@ -37,7 +37,8 @@ export const createSupabaseClient = (cookies: AstroCookies, request?: Request) =
               cookies.set(name, value, {
                 ...options,
                 path: '/',
-                secure: false,
+                secure: import.meta.env.PROD,
+                sameSite: 'lax',
                 maxAge: 31536000 // Force 1 year expiration to prevent accidental logout
               });
             });

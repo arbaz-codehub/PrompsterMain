@@ -85,6 +85,10 @@ const errorMsg = url.searchParams.get('error') === 'auth_failed' ? 'Authenticati
 
       if (!supabaseUrl || !supabaseAnonKey) {
         console.error("Supabase environment variables are missing.");
+        alert("Configuration Error: Supabase environment variables are missing. Please check your Render environment variables and trigger a rebuild.");
+        btn.disabled = false;
+        btnText.textContent = 'Continue with Google';
+        btnSpinner.style.display = 'none';
         return;
       }
 
