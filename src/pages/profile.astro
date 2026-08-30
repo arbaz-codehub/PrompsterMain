@@ -63,7 +63,7 @@ if (Astro.request.method === "POST") {
               Settings
             </a>
 
-            <form method="POST" id="logout-form" style="width: 100%;">
+            <form method="POST" id="logout-form" style="width: 100%;" data-astro-reload>
               <input type="hidden" name="logout" value="true" />
               <button type="submit" id="logout-btn" class="btn btn--danger" style="width: 100%; display: flex; justify-content: center; gap: 0.5rem; background: rgba(244, 63, 94, 0.1); color: var(--color-accent-rose); border: 1px solid rgba(244, 63, 94, 0.2);">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

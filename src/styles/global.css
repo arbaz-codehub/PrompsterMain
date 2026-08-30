@@ -311,12 +311,15 @@ p {
   overflow: hidden;
 }
 
+.prompt-card__image-wrap.skeleton {
+  min-height: 150px;
+}
+
 .prompt-card__image {
   width: 100%;
-  min-height: 250px;
+  height: auto;
   display: block;
   transition: transform var(--transition-slow);
-  object-fit: cover;
 }
 
 .prompt-card__overlay {
