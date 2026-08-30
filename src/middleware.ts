@@ -15,6 +15,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
     routeCache.clear();
   }
 
+  // 0. Fallback for Supabase Redirect URL misconfigurations
+  // If Supabase rejects the custom redirectTo (e.g. missing 'www' in dashboard),
+  // it defaults to the Site URL and appends the code to the homepage.
+  // We intercept it here and forward it to our actual callback handler!
+  if (path === '/' && url.searchParams.has('code')) {
+    return context.redirect(`/api/auth/callback?${url.searchParams.toString()}`);
+  }
+
   const isApiOrAction = path.startsWith('/api/') || path.startsWith('/login') || path.startsWith('/signup');
   const isDynamicPrompt = path.startsWith('/prompt/');
 
