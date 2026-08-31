@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async () => {
-  const siteUrl = import.meta.env.SITE_URL || 'https://prompster.art';
+  const siteUrl = import.meta.env.SITE_URL || 'https://prompster.shop';
 
   const robotsTxt = `
 User-agent: *

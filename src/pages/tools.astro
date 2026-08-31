@@ -7,7 +7,7 @@ import { createSupabaseClient } from "../lib/supabase";
 import ImagePreviewExperiment from "../components/ImagePreviewExperiment.astro";
 import SmartFilter from "../components/SmartFilter.astro";
 
-const siteUrl = import.meta.env.SITE_URL || "https://prompster.art";
+const siteUrl = import.meta.env.SITE_URL || "https://prompster.shop";
 
 // Fetch dynamic data from Supabase
 const supabase = createSupabaseClient(Astro.cookies, Astro.request);
@@ -75,12 +75,12 @@ const jsonLd = {
     </section>
 
     <section class="container tools-section">
-      <SmartFilter 
-        targetGrid=".tools-grid" 
-        itemClass=".tools-card" 
-        titleClass=".tools-card__title" 
-        descClass=".tools-card__desc" 
-        tagClass=".tools-card__tag" 
+      <SmartFilter
+        targetGrid=".tools-grid"
+        itemClass=".tools-card"
+        titleClass=".tools-card__title"
+        descClass=".tools-card__desc"
+        tagClass=".tools-card__tag"
       />
       <div class="tools-grid" role="list">
         <!-- New Lossless WebP Compressor Card -->
@@ -182,10 +182,29 @@ const jsonLd = {
           Have an idea for a tool that would save you hours every week? Let us
           know and we might just build it.
         </p>
-        <form id="request-tool-form" style="display: flex; flex-direction: column; gap: var(--space-3); text-align: left;">
-          <input type="email" id="request-email" placeholder="Your email (optional)" style="background: var(--color-bg-elevated); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); color: var(--color-text-primary); outline: none; transition: border-color var(--transition-fast);" />
-          <textarea id="request-idea" placeholder="Describe the tool you need..." required style="background: var(--color-bg-elevated); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); color: var(--color-text-primary); outline: none; resize: vertical; min-height: 100px; transition: border-color var(--transition-fast);"></textarea>
-          <button type="submit" id="request-btn" class="btn btn--primary" style="align-self: center; margin-top: var(--space-2);">Submit Idea</button>
+        <form
+          id="request-tool-form"
+          style="display: flex; flex-direction: column; gap: var(--space-3); text-align: left;"
+        >
+          <input
+            type="email"
+            id="request-email"
+            placeholder="Your email (optional)"
+            style="background: var(--color-bg-elevated); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); color: var(--color-text-primary); outline: none; transition: border-color var(--transition-fast);"
+          />
+          <textarea
+            id="request-idea"
+            placeholder="Describe the tool you need..."
+            required
+            style="background: var(--color-bg-elevated); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); padding: var(--space-3) var(--space-4); color: var(--color-text-primary); outline: none; resize: vertical; min-height: 100px; transition: border-color var(--transition-fast);"
+          ></textarea>
+          <button
+            type="submit"
+            id="request-btn"
+            class="btn btn--primary"
+            style="align-self: center; margin-top: var(--space-2);"
+            >Submit Idea</button
+          >
         </form>
       </div>
     </aside>
@@ -209,41 +228,49 @@ const jsonLd = {
       });
     });
 
-    const form = document.getElementById('request-tool-form') as HTMLFormElement;
+    const form = document.getElementById(
+      "request-tool-form",
+    ) as HTMLFormElement;
     if (form) {
-      form.addEventListener('submit', async (e) => {
+      form.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('request-btn') as HTMLButtonElement;
-        const emailInput = document.getElementById('request-email') as HTMLInputElement;
-        const ideaInput = document.getElementById('request-idea') as HTMLTextAreaElement;
-        
+        const btn = document.getElementById("request-btn") as HTMLButtonElement;
+        const emailInput = document.getElementById(
+          "request-email",
+        ) as HTMLInputElement;
+        const ideaInput = document.getElementById(
+          "request-idea",
+        ) as HTMLTextAreaElement;
+
         if (btn && ideaInput) {
           const originalText = btn.textContent;
-          btn.textContent = 'Submitting...';
+          btn.textContent = "Submitting...";
           btn.disabled = true;
 
           try {
-            const res = await fetch('/api/requests', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ 
+            const res = await fetch("/api/requests", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
                 email: emailInput?.value || null,
-                idea_description: ideaInput.value 
-              })
+                idea_description: ideaInput.value,
+              }),
             });
-            
+
             if (res.ok) {
               btn.textContent = "✓ Idea Submitted!";
-              btn.style.background = 'var(--color-accent-emerald)';
-              ideaInput.value = '';
-              if (emailInput) emailInput.value = '';
+              btn.style.background = "var(--color-accent-emerald)";
+              ideaInput.value = "";
+              if (emailInput) emailInput.value = "";
             } else {
-              throw new Error('Failed to submit');
+              throw new Error("Failed to submit");
             }
           } catch (err) {
             btn.textContent = "Error. Try again?";
             btn.disabled = false;
-            setTimeout(() => { btn.textContent = originalText; }, 3000);
+            setTimeout(() => {
+              btn.textContent = originalText;
+            }, 3000);
           }
         }
       });

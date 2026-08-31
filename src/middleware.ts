@@ -23,7 +23,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return context.redirect(`/api/auth/callback?${url.searchParams.toString()}`);
   }
 
-  const isApiOrAction = path.startsWith('/api/') || path.startsWith('/login') || path.startsWith('/signup');
+  const isApiOrAction = path.startsWith('/api/') || path.startsWith('/login') || path.startsWith('/signup') || path.startsWith('/admin');
   const isDynamicPrompt = path.startsWith('/prompt/');
 
   const supabase = createSupabaseClient(context.cookies, context.request);

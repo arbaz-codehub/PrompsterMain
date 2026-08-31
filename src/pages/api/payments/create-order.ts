@@ -49,9 +49,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       }
 
     } else if (itemType === 'PRODUCT') {
-        // Implement logic for product fetching
-        // For now, mock it or return error if not fully implemented
-        return new Response(JSON.stringify({ error: 'Products not yet implemented' }), { status: 400 });
+      // Implement logic for product fetching
+      // For now, mock it or return error if not fully implemented
+      return new Response(JSON.stringify({ error: 'Products not yet implemented' }), { status: 400 });
     }
 
     // 3. Generate unique order ID
@@ -74,22 +74,22 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     // Create pending registration for workshops
     if (itemType === 'WORKSHOP') {
-        // We delete any previous PENDING registration to avoid unique constraint violations
-        await supabase
-            .from('workshop_registrations')
-            .delete()
-            .match({ user_id: user.id, workshop_id: itemId, status: 'PENDING' });
+      // We delete any previous PENDING registration to avoid unique constraint violations
+      await supabase
+        .from('workshop_registrations')
+        .delete()
+        .match({ user_id: user.id, workshop_id: itemId, status: 'PENDING' });
 
-        const { error: regError } = await supabase
-            .from('workshop_registrations')
-            .insert({
-                user_id: user.id,
-                workshop_id: itemId,
-                order_id: orderId,
-                status: 'PENDING'
-            });
-        
-        if (regError) throw regError;
+      const { error: regError } = await supabase
+        .from('workshop_registrations')
+        .insert({
+          user_id: user.id,
+          workshop_id: itemId,
+          order_id: orderId,
+          status: 'PENDING'
+        });
+
+      if (regError) throw regError;
     }
 
     // 5. Call Cashfree API
@@ -109,7 +109,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         customer_phone: customerPhone
       },
       order_meta: {
-        return_url: `${import.meta.env.SITE_URL || 'http://localhost:4321'}/api/payments/verify?order_id={order_id}`
+        return_url: `${import.meta.env.SITE_URL || 'http://prompster.shop'}/api/payments/verify?order_id={order_id}`
       }
     };
 
@@ -132,9 +132,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const cfData = await cfResponse.json();
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       payment_session_id: cfData.payment_session_id,
-      order_id: orderId 
+      order_id: orderId
     }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
