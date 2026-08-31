@@ -18,9 +18,6 @@ function getMediaUrl(url: string) {
   if (url.includes('unsplash.com')) {
     return url.includes('?') ? `${url}&fm=webp&q=80&w=1200` : `${url}?fm=webp&q=80&w=1200`;
   }
-  if (url.includes('supabase.co/storage/v1/object/public/')) {
-    return url.replace('/object/public/', '/render/image/public/') + '?width=1200&format=webp&quality=80';
-  }
   return url;
 }
 ---

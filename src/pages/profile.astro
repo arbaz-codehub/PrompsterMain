@@ -181,7 +181,6 @@ if (Astro.request.method === "POST") {
         for (const p of prompts) {
           let imageUrl = p.images[0] || 'https://picsum.photos/seed/default/800/600';
           if (imageUrl.includes('unsplash.com')) imageUrl += '&fm=webp&q=80&w=600';
-          else if (imageUrl.includes('supabase.co')) imageUrl = imageUrl.replace('/object/public/', '/render/image/public/') + '?width=600&format=webp&quality=80';
 
           html += `
             <a href="/prompt/${p.slug}" class="prompt-card animate-fade-in-up" id="card-${p.id}" title="${p.title} - ${p.category}">
