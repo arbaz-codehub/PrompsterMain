@@ -231,8 +231,29 @@ function generateSlug(title: string): string {
     .replace(/^-|-$/g, '');
 }
 
+const unsplashPlaceholders = [
+  "https://images.unsplash.com/photo-1542038784456-1ea8e935640e",
+  "https://images.unsplash.com/photo-1611162617474-5b21e879e113",
+  "https://images.unsplash.com/photo-1455390582262-044cdead27d8",
+  "https://images.unsplash.com/photo-1579546929518-9e396f3cc809",
+  "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe",
+  "https://images.unsplash.com/photo-1531685250784-afb3487c9413",
+  "https://images.unsplash.com/photo-1550684848-fac1c5b4e853",
+  "https://images.unsplash.com/photo-1563089145-599997674d42",
+  "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e",
+  "https://images.unsplash.com/photo-1541701494587-cb58502866ab"
+];
+
 // Helper to convert snake_case DB format to camelCase Prompt type
 function mapDbToPrompt(dbItem: any): Prompt {
+  const mappedImages = (dbItem.images || []).map((img: string, index: number) => {
+    if (img.includes('picsum.photos')) {
+      const hash = (dbItem.id ? dbItem.id.charCodeAt(0) + dbItem.id.charCodeAt(dbItem.id.length - 1) : 0) + index;
+      return unsplashPlaceholders[hash % unsplashPlaceholders.length];
+    }
+    return img;
+  });
+
   return {
     id: dbItem.id,
     slug: dbItem.slug,
@@ -242,7 +263,7 @@ function mapDbToPrompt(dbItem: any): Prompt {
     prompts: dbItem.prompts,
     tags: dbItem.tags,
     category: dbItem.category,
-    images: dbItem.images,
+    images: mappedImages,
     createdAt: dbItem.created_at,
     updatedAt: dbItem.updated_at,
   };
