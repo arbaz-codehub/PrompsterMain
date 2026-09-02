@@ -7,7 +7,7 @@ export default defineConfig({
   adapter: node({
     mode: 'standalone',
   }),
-  site: 'https://prompster.shop',
+  site: 'https://www.prompster.shop',
   prefetch: {
     prefetchAll: true,
     defaultStrategy: 'load'

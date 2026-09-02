@@ -15,7 +15,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
     routeCache.clear();
   }
 
-  const isApiOrAction = path.startsWith('/api/') || path.startsWith('/login') || path.startsWith('/signup');
+  // 0. Fallback for Supabase Redirect URL misconfigurations
+  // If Supabase rejects the custom redirectTo (e.g. missing 'www' in dashboard),
+  // it defaults to the Site URL and appends the code to the homepage.
+  // We intercept it here and forward it to our actual callback handler!
+  if (path === '/' && url.searchParams.has('code')) {
+    return context.redirect(`/api/auth/callback?${url.searchParams.toString()}`);
+  }
+
+  const isApiOrAction = path.startsWith('/api/') || path.startsWith('/login') || path.startsWith('/signup') || path.startsWith('/admin');
   const isDynamicPrompt = path.startsWith('/prompt/');
 
   const supabase = createSupabaseClient(context.cookies, context.request);
@@ -33,7 +41,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (cached && (now - cached.timestamp < CACHE_TTL)) {
       return new Response(cached.html, {
         status: 200,
-        headers: { 'Content-Type': 'text/html' }
+        headers: { 
+          'Content-Type': 'text/html',
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
+        }
       });
     }
   }
@@ -57,7 +68,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (user) {
     context.cookies.set('prompster_user_id', user.id, { path: '/', secure: import.meta.env.PROD, sameSite: 'lax', maxAge: 31536000 });
   } else {
-    context.cookies.delete('prompster_user_id', { path: '/' });
+    context.cookies.delete('prompster_user_id', { path: '/', secure: import.meta.env.PROD, sameSite: 'lax' });
   }
 
   // ── Protect onboarding ──
@@ -93,6 +104,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       const clonedResponse = response.clone();
       const html = await clonedResponse.text();
       routeCache.set(cacheKey, { html, timestamp: Date.now() });
+      response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
   }
 
