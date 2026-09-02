@@ -21,7 +21,7 @@ const relatedPrompts = allPrompts
   .filter((p) => p.category === prompt.category && p.id !== prompt.id)
   .slice(0, 4);
 
-const siteUrl = import.meta.env.SITE_URL || 'https://prompster.shop';
+const siteUrl = import.meta.env.SITE_URL || 'https://www.prompster.shop';
 const isLoggedIn = !!Astro.locals.user;
 
 // Parse basic markdown-style text into styled HTML

@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getPrompts } from '../lib/prompts';
 
 export const GET: APIRoute = async () => {
-  const siteUrl = import.meta.env.SITE_URL || 'https://prompster.shop';
+  const siteUrl = import.meta.env.SITE_URL || 'https://www.prompster.shop';
   const prompts = await getPrompts();
 
   const urls = [

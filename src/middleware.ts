@@ -65,7 +65,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (user) {
     context.cookies.set('prompster_user_id', user.id, { path: '/', secure: import.meta.env.PROD, sameSite: 'lax', maxAge: 31536000 });
   } else {
-    context.cookies.delete('prompster_user_id', { path: '/' });
+    context.cookies.delete('prompster_user_id', { path: '/', secure: import.meta.env.PROD, sameSite: 'lax' });
   }
 
   // ── Protect onboarding ──

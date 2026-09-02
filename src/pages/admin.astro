@@ -14,7 +14,7 @@ if (Astro.request.method === 'POST') {
   const data = await Astro.request.formData();
   const password = data.get('password');
   if (password === adminPassword) {
-    Astro.cookies.set('prompster_admin_auth', password, { path: '/', maxAge: 86400, secure: false });
+    Astro.cookies.set('prompster_admin_auth', password, { path: '/', maxAge: 86400, secure: import.meta.env.PROD, sameSite: 'lax' });
     return Astro.redirect('/admin');
   } else {
     error = true;

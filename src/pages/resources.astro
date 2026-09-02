@@ -7,7 +7,7 @@ import { createSupabaseClient } from "../lib/supabase";
 import ImagePreviewExperiment from "../components/ImagePreviewExperiment.astro";
 import SmartFilter from "../components/SmartFilter.astro";
 
-const siteUrl = import.meta.env.SITE_URL || "https://prompster.shop";
+const siteUrl = import.meta.env.SITE_URL || "https://www.prompster.shop";
 
 // Fetch dynamic data from Supabase
 const supabase = createSupabaseClient(Astro.cookies, Astro.request);

@@ -109,7 +109,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         customer_phone: customerPhone
       },
       order_meta: {
-        return_url: `${import.meta.env.SITE_URL || 'http://prompster.shop'}/api/payments/verify?order_id={order_id}`
+        return_url: `${import.meta.env.SITE_URL || 'https://www.prompster.shop'}/api/payments/verify?order_id={order_id}`
       }
     };
 
