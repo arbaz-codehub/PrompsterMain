@@ -8,6 +8,9 @@ export default defineConfig({
     mode: 'standalone',
   }),
   site: 'https://www.prompster.shop',
+  security: {
+    checkOrigin: false
+  },
   prefetch: {
     prefetchAll: true,
     defaultStrategy: 'load'
