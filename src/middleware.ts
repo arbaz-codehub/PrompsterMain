@@ -41,7 +41,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (cached && (now - cached.timestamp < CACHE_TTL)) {
       return new Response(cached.html, {
         status: 200,
-        headers: { 'Content-Type': 'text/html' }
+        headers: { 
+          'Content-Type': 'text/html',
+          'Cache-Control': 'no-cache, no-store, must-revalidate'
+        }
       });
     }
   }
@@ -101,6 +104,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       const clonedResponse = response.clone();
       const html = await clonedResponse.text();
       routeCache.set(cacheKey, { html, timestamp: Date.now() });
+      response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
   }
 
