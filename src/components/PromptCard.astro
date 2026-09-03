@@ -4,9 +4,10 @@ import TagBadge from './TagBadge.astro';
 
 interface Props {
   prompt: Prompt;
+  eager?: boolean;
 }
 
-const { prompt } = Astro.props;
+const { prompt, eager = false } = Astro.props;
 const primaryImage = prompt.images[0] || 'https://picsum.photos/seed/default/800/600';
 
 function getOptimizedUrl(url: string) {
@@ -25,7 +26,9 @@ const optimizedImage = getOptimizedUrl(primaryImage);
       alt={prompt.title}
       class="prompt-card__image"
       decoding="async"
-      onload="this.parentElement.classList.remove('skeleton')"
+      loading={eager ? "eager" : "lazy"}
+      style="opacity: 0; transition: opacity 0.15s ease-out;"
+      onload="this.style.opacity = 1; this.parentElement.classList.remove('skeleton');"
     />
     <div class="prompt-card__top-actions">
       <button class="favorite-btn" data-prompt-id={prompt.id} aria-label="Save to Favourites">

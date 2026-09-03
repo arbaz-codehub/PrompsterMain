@@ -132,7 +132,7 @@ const skeletonHeights = Array.from({ length: 12 }).map(() => {
 
     <!-- Masonry Grid (Hidden until loaded, unless cached) -->
     <div class="masonry-grid prompt-grid stagger-children" id="prompt-grid" data-has-more={hasMore ? "true" : "false"} style="display: none; opacity: 0; transition: opacity 0.5s ease;">
-      {prompts.map((prompt) => <PromptCard prompt={prompt} />)}
+      {prompts.map((prompt, index) => <PromptCard prompt={prompt} eager={index < 6} />)}
     </div>
 
     <!-- Infinite scroll sentinel -->
@@ -231,14 +231,23 @@ const skeletonHeights = Array.from({ length: 12 }).map(() => {
     const hasMoreAttr = grid.getAttribute('data-has-more') === 'true';
     let noMore = !hasMoreAttr;
 
-    // Restore cached infinite scroll DOM if it exists for this category
+    // Check if the user is navigating "Back" (either via browser back button or Astro SPA back navigation)
+    const navEntries = performance.getEntriesByType("navigation");
+    const isHardBackForward = navEntries.length > 0 && navEntries[0].type === "back_forward";
+    const isSpaTraverse = history.state && history.state.astro && history.state.astro.navigationType === "traverse";
+    const isBackNav = isHardBackForward || isSpaTraverse;
+
+    // Restore cached infinite scroll DOM if it exists for this category AND we are going backwards
     const cachedHtml = sessionStorage.getItem(`gallery_html_${activeCategory}`);
     const cachedPage = sessionStorage.getItem(`gallery_page_${activeCategory}`);
-    const isCached = sessionStorage.getItem("gallery_loaded");
 
-    if (cachedHtml && cachedPage) {
+    if (cachedHtml && cachedPage && isBackNav) {
       grid.innerHTML = cachedHtml;
       page = parseInt(cachedPage, 10);
+    } else if (!isBackNav) {
+      // It's a fresh load, refresh, or clicking the logo/home link -> clear cache to show fresh data!
+      sessionStorage.removeItem(`gallery_html_${activeCategory}`);
+      sessionStorage.removeItem(`gallery_page_${activeCategory}`);
     }
 
     function showGrid() {
@@ -350,7 +359,7 @@ const skeletonHeights = Array.from({ length: 12 }).map(() => {
                     // When image loads, just remove skeleton
                     card.innerHTML = `
                       <div class="prompt-card__image-wrap skeleton">
-                        <img src="${imgUrl}" alt="${prompt.title}" class="prompt-card__image" decoding="async" onload="this.parentElement.classList.remove('skeleton')" />
+                        <img src="${imgUrl}" alt="${prompt.title}" class="prompt-card__image" decoding="async" loading="lazy" style="opacity: 0; transition: opacity 0.15s ease-out;" onload="this.style.opacity = 1; this.parentElement.classList.remove('skeleton');" />
                         
                         <div class="prompt-card__top-actions">
                           <button class="favorite-btn" data-prompt-id="${prompt.id}" aria-label="Save to Favourites">
