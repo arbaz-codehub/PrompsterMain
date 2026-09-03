@@ -226,7 +226,7 @@ if (prompt.seoDescription) {
 
   <article class="detail-page container">
     <header style="margin-bottom: var(--space-4);">
-      <a href="/" onclick="if (document.referrer.includes(window.location.host)) { event.preventDefault(); window.history.back(); }" class="detail-page__back">
+      <a href="/" onclick="if (document.referrer.includes(window.location.host)) { event.preventDefault(); event.stopPropagation(); window.history.back(); }" class="detail-page__back">
         ← Back to Gallery
       </a>
     </header>
