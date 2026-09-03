@@ -159,9 +159,7 @@ export async function addPrompt(data: Omit<Prompt, 'id' | 'slug' | 'createdAt' |
     return null;
   }
 
-  // Invalidate cache
-  cache.prompts = null;
-  for (const key in paginatedCache) delete paginatedCache[key];
+  clearPromptsCache();
 
   return mapDbToPrompt(insertedData);
 }
@@ -199,9 +197,7 @@ export async function updatePrompt(
     return null;
   }
 
-  // Invalidate cache
-  cache.prompts = null;
-  for (const key in paginatedCache) delete paginatedCache[key];
+  clearPromptsCache();
 
   return mapDbToPrompt(updatedData);
 }
@@ -217,11 +213,14 @@ export async function deletePrompt(id: string): Promise<boolean> {
     return false;
   }
   
-  // Invalidate cache
-  cache.prompts = null;
-  for (const key in paginatedCache) delete paginatedCache[key];
+  clearPromptsCache();
   
   return true;
+}
+
+export function clearPromptsCache() {
+  cache.prompts = null;
+  for (const key in paginatedCache) delete paginatedCache[key];
 }
 
 function generateSlug(title: string): string {
