@@ -2,9 +2,10 @@
 interface Props {
   images: string[];
   alt: string;
+  id?: string;
 }
 
-const { images, alt } = Astro.props;
+const { images, alt, id } = Astro.props;
 const videoBaseUrl = import.meta.env.PUBLIC_VIDEO_CDN_BASE || '';
 
 function isVideoUrl(url: string) {
@@ -36,6 +37,7 @@ function getMediaUrl(url: string) {
           src={mediaUrl}
           class={`carousel__image ${i === 0 ? 'carousel__image--active' : ''}`}
           data-index={i}
+          transition:name={i === 0 && id ? `img-${id}` : undefined}
           style={i !== 0 ? 'display: none; width: 100%; height: 100%; object-fit: cover;' : 'width: 100%; height: 100%; object-fit: cover;'}
           autoplay
           loop
@@ -51,6 +53,7 @@ function getMediaUrl(url: string) {
           data-index={i}
           loading="eager"
           decoding="async"
+          transition:name={i === 0 && id ? `img-${id}` : undefined}
           style={i !== 0 ? 'display: none;' : ''}
           onload="document.getElementById('carousel-main-container').classList.remove('skeleton')"
         />

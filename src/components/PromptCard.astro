@@ -27,6 +27,7 @@ const optimizedImage = getOptimizedUrl(primaryImage);
       class="prompt-card__image"
       decoding="async"
       loading={eager ? "eager" : "lazy"}
+      transition:name={`img-${prompt.id}`}
       style="opacity: 0; transition: opacity 0.15s ease-out;"
       onload="this.style.opacity = 1; this.parentElement.classList.remove('skeleton');"
     />

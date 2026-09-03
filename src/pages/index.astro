@@ -359,7 +359,7 @@ const skeletonHeights = Array.from({ length: 12 }).map(() => {
                     // When image loads, just remove skeleton
                     card.innerHTML = `
                       <div class="prompt-card__image-wrap skeleton">
-                        <img src="${imgUrl}" alt="${prompt.title}" class="prompt-card__image" decoding="async" loading="lazy" style="opacity: 0; transition: opacity 0.15s ease-out;" onload="this.style.opacity = 1; this.parentElement.classList.remove('skeleton');" />
+                        <img src="${imgUrl}" alt="${prompt.title}" class="prompt-card__image" decoding="async" loading="lazy" style="view-transition-name: img-${prompt.id}; opacity: 0; transition: opacity 0.15s ease-out;" onload="this.style.opacity = 1; this.parentElement.classList.remove('skeleton');" />
                         
                         <div class="prompt-card__top-actions">
                           <button class="favorite-btn" data-prompt-id="${prompt.id}" aria-label="Save to Favourites">
