@@ -10,6 +10,9 @@ export interface Prompt {
   images: string[];
   createdAt: string;
   updatedAt: string;
+  pack_id?: string;
+  pack_title?: string;
+  pack_image_url?: string;
 }
 
 export interface AnalyticsData {

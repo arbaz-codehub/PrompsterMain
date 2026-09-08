@@ -6,13 +6,25 @@ import ImageCarousel from '../../components/ImageCarousel.astro';
 import CopyButton from '../../components/CopyButton.astro';
 import TagBadge from '../../components/TagBadge.astro';
 import PromptCard from '../../components/PromptCard.astro';
+import ImagePreviewExperiment from '../../components/ImagePreviewExperiment.astro';
 import { getPromptBySlug, getPrompts } from '../../lib/prompts';
+import { createSupabaseClient } from '../../lib/supabase';
 
 const { slug } = Astro.params;
 const prompt = slug ? await getPromptBySlug(slug) : undefined;
 
 if (!prompt) {
   return Astro.redirect('/404');
+}
+
+const supabase = createSupabaseClient(Astro.cookies, Astro.request);
+
+let packData = null;
+if (prompt.pack_id) {
+  const { data } = await supabase.from('marketplace_items').select('title, image_url').eq('id', prompt.pack_id).single();
+  if (data) {
+    packData = data;
+  }
 }
 
 // Get related prompts (same category, excluding current)
@@ -255,17 +267,44 @@ if (prompt.seoDescription) {
           </div>
         </header>
 
-        <div class="prompt-detail__content-area">
+        <div class="prompt-detail__content-area" style="padding-bottom: 1rem;">
           <div class="prompt-detail__content-label">Prompt</div>
-          <p 
-            class={`prompt-detail__content-text ${!isLoggedIn ? 'blurred-text auth-trigger' : ''}`} 
-            id="prompt-text-display"
-          >
-            {prompt.content}
-          </p>
+          <div class="prompt-detail__text-wrapper" id="prompt-text-wrapper">
+            <p 
+              class={`prompt-detail__content-text ${!isLoggedIn ? 'blurred-text auth-trigger' : ''}`} 
+              id="prompt-text-display"
+              style="margin-bottom: 0;"
+            >
+              {prompt.content}
+            </p>
+            <div class="prompt-detail__fade" id="prompt-fade"></div>
+          </div>
+          <div class="prompt-detail__actions">
+            <CopyButton text={prompt.content} authRequired={!isLoggedIn} />
+            <button class="btn btn--secondary" id="show-more-prompt-btn" style="display: none; font-size: var(--text-base); padding: var(--space-4) var(--space-8); border-radius: var(--radius-xl); flex: 1; justify-content: center;">
+              <span class="seo-icon" style="margin-right: 6px;">📖</span> View Full Prompt
+            </button>
+          </div>
         </div>
 
-        <CopyButton text={prompt.content} authRequired={!isLoggedIn} />
+        <!-- EXPERIMENT: Marketplace Pack Link -->
+        {prompt.pack_id && (
+          <div class="prompt-pack-card">
+            <div class="prompt-pack-card__image-wrap preview-trigger" data-preview={prompt.pack_image_url}>
+              {prompt.pack_image_url ? (
+                <img src={prompt.pack_image_url} alt={prompt.pack_title || 'Marketplace Pack'} class="prompt-pack-card__image" />
+              ) : (
+                <div class="prompt-pack-card__placeholder">📦</div>
+              )}
+            </div>
+            <div class="prompt-pack-card__content">
+              <span class="prompt-pack-card__label">Part of Marketplace Pack</span>
+              <h4 class="prompt-pack-card__title">{prompt.pack_title || 'Premium Collection'}</h4>
+            </div>
+            <a href={`/packs/${prompt.pack_id}`} class="btn btn--primary btn--sm prompt-pack-card__btn" style="white-space: nowrap; flex-shrink: 0;" data-astro-prefetch="hover">View Pack &rarr;</a>
+          </div>
+        )}
+        <!-- END EXPERIMENT -->
 
         <!-- EXPERIMENT: SEO Description Block -->
         <div id="seo-block" class="prompt-seo-block">
@@ -415,5 +454,164 @@ if (prompt.seoDescription) {
     </div>
   )}
 
+  <!-- Full Prompt Modal -->
+  <div class="auth-modal-overlay" id="full-prompt-modal" style="z-index: 10000;">
+    <div class="auth-modal" style="position: relative; max-width: 800px; width: 90%; max-height: 90vh; display: flex; flex-direction: column; text-align: left;">
+      <button id="close-full-prompt" aria-label="Close modal" style="position: absolute; top: 1.25rem; right: 1.25rem; background: none; border: none; color: var(--color-text-tertiary); cursor: pointer; padding: 0.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.color='var(--color-text-primary)';" onmouseout="this.style.background='none'; this.style.color='var(--color-text-tertiary)';">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+      <h2 style="margin-bottom: 1rem; font-size: 1.5rem;">Full Prompt</h2>
+      <div style="flex: 1; overflow-y: auto; background: var(--color-bg-tertiary); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem;">
+        <p class="prompt-detail__content-text" style="margin: 0; white-space: pre-wrap;">{prompt.content}</p>
+      </div>
+      <div style="display: flex; justify-content: flex-end;">
+        <CopyButton text={prompt.content} authRequired={!isLoggedIn} />
+      </div>
+    </div>
+  </div>
+
+  <ImagePreviewExperiment />
   <Footer slot="footer" />
 </BaseLayout>
+
+<style>
+  /* Show More Prompt Styles */
+  .prompt-detail__text-wrapper {
+    position: relative;
+    max-height: 200px;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  .prompt-detail__text-wrapper.expanded {
+    max-height: none;
+  }
+  .prompt-detail__fade {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background: linear-gradient(to bottom, transparent, var(--color-bg-tertiary));
+    pointer-events: none;
+  }
+  .prompt-detail__actions {
+    display: flex;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+    align-items: center;
+  }
+
+  /* Pack Linking Experiment Styles */
+  .prompt-pack-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+    transition: all var(--transition-base);
+  }
+  .prompt-pack-card:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: var(--shadow-glow);
+  }
+  .prompt-pack-card__image-wrap {
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--color-bg-elevated);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+  }
+  .prompt-pack-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .prompt-pack-card__content {
+    flex: 1;
+    min-width: 0;
+  }
+  .prompt-pack-card__label {
+    display: block;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-accent-amber);
+    margin-bottom: var(--space-1);
+  }
+  .prompt-pack-card__title {
+    font-size: var(--text-lg);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 0;
+  }
+  
+  @media (max-width: 600px) {
+    .prompt-pack-card {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+    }
+    .prompt-pack-card__image-wrap {
+      width: 100%;
+      height: 140px;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const textWrapper = document.getElementById('prompt-text-wrapper');
+    const textDisplay = document.getElementById('prompt-text-display');
+    const fade = document.getElementById('prompt-fade');
+    const showMoreBtn = document.getElementById('show-more-prompt-btn');
+    const fullPromptModal = document.getElementById('full-prompt-modal');
+    const closeFullPrompt = document.getElementById('close-full-prompt');
+
+    if (textWrapper && textDisplay && showMoreBtn) {
+      // Check if text is overflowing the 200px container
+      if (textDisplay.offsetHeight > 200) {
+        showMoreBtn.style.display = 'inline-flex';
+      } else {
+        if(fade) fade.style.display = 'none';
+        textWrapper.style.maxHeight = 'none';
+      }
+
+      showMoreBtn.addEventListener('click', () => {
+        if(fullPromptModal) {
+          fullPromptModal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
+      });
+    }
+
+    if (closeFullPrompt && fullPromptModal) {
+      closeFullPrompt.addEventListener('click', () => {
+        fullPromptModal.classList.remove('active');
+        document.body.style.overflow = '';
+      });
+
+      fullPromptModal.addEventListener('click', (e) => {
+        if (e.target === fullPromptModal) {
+          fullPromptModal.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      });
+    }
+  });
+</script>

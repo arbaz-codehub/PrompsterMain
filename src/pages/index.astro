@@ -5,6 +5,7 @@ import Footer from "../components/Footer.astro";
 import PromptCard from "../components/PromptCard.astro";
 import SkeletonCard from "../components/SkeletonCard.astro";
 import SideNav from "../components/SideNav.astro";
+import ImagePreviewExperiment from "../components/ImagePreviewExperiment.astro";
 import { getPaginatedPrompts, getCategories } from "../lib/prompts";
 import { createSupabaseClient } from "../lib/supabase";
 
@@ -176,6 +177,7 @@ const skeletonHeights = Array.from({ length: 12 }).map(() => {
 
   <SideNav />
 
+  <ImagePreviewExperiment />
   <Footer slot="footer" />
 </BaseLayout>
 

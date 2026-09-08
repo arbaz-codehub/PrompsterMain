@@ -24,7 +24,8 @@ const optimizedImage = getOptimizedUrl(primaryImage);
     <img
       src={optimizedImage}
       alt={prompt.title}
-      class="prompt-card__image"
+      class="prompt-card__image preview-trigger"
+      data-preview={optimizedImage}
       decoding="async"
       loading={eager ? "eager" : "lazy"}
       transition:name={`img-${prompt.id}`}

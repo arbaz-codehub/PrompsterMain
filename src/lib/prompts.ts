@@ -265,5 +265,8 @@ function mapDbToPrompt(dbItem: any): Prompt {
     images: mappedImages,
     createdAt: dbItem.created_at,
     updatedAt: dbItem.updated_at,
+    pack_id: dbItem.pack_id,
+    pack_title: dbItem.pack_title,
+    pack_image_url: dbItem.pack_image_url,
   };
 }
