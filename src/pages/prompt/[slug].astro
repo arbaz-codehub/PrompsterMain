@@ -564,13 +564,15 @@ if (prompt.seoDescription) {
   
   @media (max-width: 600px) {
     .prompt-pack-card {
-      flex-direction: column;
-      align-items: stretch;
-      text-align: center;
+      padding: var(--space-3);
+      gap: var(--space-3);
     }
     .prompt-pack-card__image-wrap {
-      width: 100%;
-      height: 140px;
+      width: 64px;
+      height: 64px;
+    }
+    .prompt-pack-card__title {
+      font-size: var(--text-base);
     }
   }
 </style>

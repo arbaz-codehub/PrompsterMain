@@ -203,6 +203,13 @@ h2 { font-size: var(--text-3xl); }
 h3 { font-size: var(--text-2xl); }
 h4 { font-size: var(--text-xl); }
 
+@media (max-width: 768px) {
+  h1 { font-size: var(--text-3xl); }
+  h2 { font-size: var(--text-2xl); }
+  h3 { font-size: var(--text-xl); }
+  h4 { font-size: var(--text-lg); }
+}
+
 p {
   color: var(--color-text-secondary);
   line-height: 1.7;
@@ -358,6 +365,22 @@ p {
   background: var(--gradient-primary);
   color: white;
   margin-bottom: var(--space-2);
+}
+
+.prompt-detail__title {
+  font-family: var(--font-heading);
+  font-size: var(--text-4xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
+  line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+  .prompt-detail__title {
+    font-size: var(--text-2xl);
+    margin-bottom: var(--space-3);
+  }
 }
 
 .prompt-card__title {
@@ -721,6 +744,15 @@ p {
   display: block;
   object-fit: cover;
   transition: opacity var(--transition-base);
+}
+
+@media (max-width: 768px) {
+  .carousel__image {
+    max-height: 55vh;
+    object-fit: contain;
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-xl);
+  }
 }
 
 .carousel__nav-btn {
