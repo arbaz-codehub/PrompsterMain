@@ -372,17 +372,13 @@ const user = Astro.locals.user;
     font-size: var(--text-xl);
   }
   .collections-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: var(--space-4);
-    overflow-x: auto;
     padding-top: var(--space-4);
     padding-bottom: var(--space-8);
-    scrollbar-width: none;
   }
-  .collections-row::-webkit-scrollbar { display: none; }
   .collection-card {
-    flex: 0 0 auto;
-    width: 280px;
     min-height: 160px;
     padding: var(--space-6);
     display: flex;
@@ -1516,8 +1512,9 @@ const user = Astro.locals.user;
 
     document.getElementById('fieldTitleWrap').classList.toggle('invalid', !title);
     document.getElementById('fieldContentWrap').classList.toggle('invalid', !content);
-    document.getElementById('fieldCollectionWrap').classList.toggle('invalid', !collection_id);
-    if (!title || !content || !collection_id) return;
+    // collection_id is optional — do NOT block save if missing
+    document.getElementById('fieldCollectionWrap').classList.remove('invalid');
+    if (!title || !content) return;
 
     const tags = document.getElementById('fieldTags').value.split(',').map(t => t.trim()).filter(Boolean);
     const category = document.getElementById('fieldCategory').value.trim() || 'Personal';
@@ -1526,29 +1523,41 @@ const user = Astro.locals.user;
 
     const payload = { user_id: userId, title, content, example, category, price, tags, collection_id, updated_at };
 
-    if (editingPromptId) {
-      // Optimistic
-      const idx = prompts.findIndex(p => p.id === editingPromptId);
-      if (idx > -1) prompts[idx] = { ...prompts[idx], ...payload };
-      saveToLocal();
-      render(); closeModals();
-      // DB
-      await supabase.from('user_prompts').update(payload).eq('id', editingPromptId);
-      toast('Prompt updated');
-    } else {
-      // Optimistic with temp ID
-      const tempId = uuid();
-      const newPrompt = { id: tempId, created_at: updated_at, ...payload };
-      prompts.unshift(newPrompt);
-      saveToLocal();
-      render(); closeModals();
-      // DB
-      const { data } = await supabase.from('user_prompts').insert(payload).select().single();
-      if (data) {
-        const idx = prompts.findIndex(p => p.id === tempId);
-        if (idx > -1) { prompts[idx] = data; saveToLocal(); render(); }
+    const saveBtn = document.getElementById('savePromptBtn');
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = 'Saving...';
+    saveBtn.disabled = true;
+
+    try {
+      if (editingPromptId) {
+        // DB
+        await supabase.from('user_prompts').update(payload).eq('id', editingPromptId);
+        
+        // Local State
+        const idx = prompts.findIndex(p => p.id === editingPromptId);
+        if (idx > -1) prompts[idx] = { ...prompts[idx], ...payload };
+        saveToLocal();
+        render(); closeModals();
+        toast('Prompt updated');
+      } else {
+        // DB
+        const { data, error } = await supabase.from('user_prompts').insert(payload).select().single();
+        if (error) throw error;
+        
+        // Local State
+        if (data) {
+          prompts.unshift(data);
+          saveToLocal();
+          render(); closeModals();
+        }
+        toast('Prompt saved');
       }
-      toast('Prompt saved');
+    } catch (e) {
+      console.error(e);
+      toast('Error saving prompt. Please try again.');
+    } finally {
+      saveBtn.textContent = originalText;
+      saveBtn.disabled = false;
     }
   }
 
@@ -1576,32 +1585,43 @@ const user = Astro.locals.user;
     }
     document.getElementById('collectionNameWrap').classList.remove('invalid');
 
-    if (editingCollectionId) {
-      // Optimistic
-      const c = collections.find(x => x.id === editingCollectionId);
-      if (c) { c.name = name; c.description = desc; }
-      saveToLocal();
-      render(); closeModals();
-      // DB
-      try {
-        await supabase.from('collections').update({ name, description: desc }).eq('id', editingCollectionId);
+    const saveBtn = document.getElementById('saveCollectionBtn');
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = 'Saving...';
+    saveBtn.disabled = true;
+
+    try {
+      if (editingCollectionId) {
+        // DB
+        const { error } = await supabase.from('collections').update({ name, description: desc }).eq('id', editingCollectionId);
+        if (error) throw error;
+        
+        // Local State
+        const c = collections.find(x => x.id === editingCollectionId);
+        if (c) { c.name = name; c.description = desc; }
+        saveToLocal();
+        render(); closeModals();
         toast('Collection updated');
-      } catch (e) { toast('Error updating collection'); }
-    } else {
-      const payload = { user_id: userId, name, description: desc };
-      const tempId = uuid();
-      collections.push({ id: tempId, created_at: new Date().toISOString(), ...payload });
-      saveToLocal();
-      render(); closeModals();
-      
-      try {
-        const { data } = await supabase.from('collections').insert(payload).select().single();
+      } else {
+        const payload = { user_id: userId, name, description: desc };
+        // DB
+        const { data, error } = await supabase.from('collections').insert(payload).select().single();
+        if (error) throw error;
+        
+        // Local State
         if (data) {
-          const idx = collections.findIndex(c => c.id === tempId);
-          if (idx > -1) { collections[idx] = data; saveToLocal(); render(); }
+          collections.push(data);
+          saveToLocal();
+          render(); closeModals();
         }
-        toast('Collection created');
-      } catch (e) { toast('Error creating collection'); }
+        toast('Collection saved');
+      }
+    } catch (e) {
+      console.error(e);
+      toast('Error saving collection. Please try again.');
+    } finally {
+      saveBtn.textContent = originalText;
+      saveBtn.disabled = false;
     }
   }
 
