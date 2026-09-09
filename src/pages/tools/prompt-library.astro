@@ -1395,18 +1395,41 @@ const user = Astro.locals.user;
     document.getElementById('confirmActionBtn').addEventListener('click', executeConfirm);
 
     // Export/Import
-    document.getElementById('exportBtn').addEventListener('click', () => {
-      const data = { version: 1, exportedAt: new Date().toISOString(), prompts, collections };
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = 'prompster-library-backup.json';
-      a.click(); URL.revokeObjectURL(url);
+    const exportBtn = document.getElementById('exportBtn');
+    exportBtn.addEventListener('click', async () => {
+      const originalHtml = exportBtn.innerHTML;
+      exportBtn.innerHTML = '<span>⏳ Exporting...</span>';
+      exportBtn.disabled = true;
+      
+      // Brief delay for UI feedback
+      await new Promise(r => setTimeout(r, 400));
+      
+      try {
+        const data = { version: 1, exportedAt: new Date().toISOString(), prompts, collections };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'prompster-library-backup.json';
+        a.click(); URL.revokeObjectURL(url);
+        toast('Export successful!');
+      } catch (err) {
+        toast('Export failed.');
+      } finally {
+        exportBtn.innerHTML = originalHtml;
+        exportBtn.disabled = false;
+      }
     });
 
-    document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+    const importBtn = document.getElementById('importBtn');
+    importBtn.addEventListener('click', () => document.getElementById('importFile').click());
+    
     document.getElementById('importFile').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if(!file) return;
+      
+      const originalHtml = importBtn.innerHTML;
+      importBtn.innerHTML = '<span>⏳ Importing...</span>';
+      importBtn.disabled = true;
+
       try {
         const text = await file.text();
         const data = JSON.parse(text);
@@ -1452,8 +1475,11 @@ const user = Astro.locals.user;
         render();
       } catch (err) {
         toast('Failed to import file.');
+      } finally {
+        e.target.value = '';
+        importBtn.innerHTML = originalHtml;
+        importBtn.disabled = false;
       }
-      e.target.value = '';
     });
   }
 
