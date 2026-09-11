@@ -31,8 +31,10 @@ const user = Astro.locals.user;
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         <input type="text" id="searchInput" placeholder="Search by title or tag..." aria-label="Search prompts" class="input-base">
       </div>
-      <div class="tabs" id="filterTabs">
-        <!-- Generated dynamically -->
+      <div class="category-select-wrap">
+        <select id="filterSelect" class="input-base" aria-label="Filter by category" style="border-radius: var(--radius-full); cursor: pointer; min-width: 150px; padding-right: 32px; appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23a3a3a3\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'6 9 12 15 18 9\'></polyline></svg>'); background-repeat: no-repeat; background-position: right 12px center;">
+          <option value="all">All Prompts</option>
+        </select>
       </div>
       <div class="toolbar-actions">
         <button class="btn btn--ghost btn--sm" id="importBtn" aria-label="Import backup">
@@ -203,7 +205,7 @@ const user = Astro.locals.user;
       </div>
       <div class="modal-body" style="padding-top: 0; margin-top: var(--space-4);">
         <label style="font-weight: 500; margin-bottom: 8px; display: block; color: var(--color-text-secondary);">Prompt Template</label>
-        <pre class="lib-code-content" id="viewPromptContent" style="white-space: pre-wrap; font-size: 0.9rem; background: var(--color-bg-elevated); padding: 1rem; border-radius: 8px; border: 1px solid var(--color-border-subtle); max-height: 40vh; overflow-y: auto; font-family: monospace; margin: 0; line-height: 1.5;"></pre>
+        <pre class="lib-code-content" id="viewPromptContent" style="white-space: pre-wrap; font-size: 0.9rem; background: var(--color-bg-elevated); padding: 1rem; border-radius: 8px; border: 1px solid var(--color-border-subtle); min-height: 200px; max-height: 50vh; overflow-y: auto; font-family: monospace; margin: 0; line-height: 1.5;"></pre>
         
         <div id="viewPromptExampleWrap" style="margin-top: 1.5rem; display: none;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -213,7 +215,12 @@ const user = Astro.locals.user;
               Copy Example
             </button>
           </div>
-          <pre class="lib-code-content" id="viewPromptExampleContent" style="white-space: pre-wrap; font-size: 0.85rem; background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; border: 1px dashed var(--color-border-subtle); max-height: 30vh; overflow-y: auto; font-family: monospace; margin: 0; line-height: 1.5; color: var(--color-text-secondary);"></pre>
+          <pre class="lib-code-content" id="viewPromptExampleContent" style="white-space: pre-wrap; font-size: 0.85rem; background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; border: 1px dashed var(--color-border-subtle); min-height: 200px; max-height: 50vh; overflow-y: auto; font-family: monospace; margin: 0; line-height: 1.5; color: var(--color-text-secondary);"></pre>
+        </div>
+        
+        <div id="viewPromptNoteWrap" style="margin-top: 1.5rem; display: none;">
+          <label style="font-weight: 500; color: var(--color-text-secondary); margin-bottom: 8px; display: block;">Note</label>
+          <div id="viewPromptNoteContent" style="font-size: 0.9rem; color: var(--color-text-primary); line-height: 1.5; background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; border: 1px solid var(--color-border-subtle);"></div>
         </div>
         
         <div id="viewPromptTagsWrap" style="margin-top: 1.5rem; display: none; flex-wrap: wrap; gap: 6px;"></div>
@@ -535,6 +542,7 @@ const user = Astro.locals.user;
   .lib-card.cat-personal::before { background: radial-gradient(350px circle at var(--mouse-x, -1000px) var(--mouse-y, -1000px), rgba(59,130,246,0.15), transparent 80%); }
   .lib-card.cat-selling::before { background: radial-gradient(350px circle at var(--mouse-x, -1000px) var(--mouse-y, -1000px), rgba(245,158,11,0.15), transparent 80%); }
   .lib-card.cat-both::before { background: radial-gradient(350px circle at var(--mouse-x, -1000px) var(--mouse-y, -1000px), rgba(16,185,129,0.15), transparent 80%); }
+  .lib-card.cat-custom::before { background: radial-gradient(350px circle at var(--mouse-x, -1000px) var(--mouse-y, -1000px), hsla(var(--cat-h, 0), 70%, 60%, 0.15), transparent 80%); }
 
   .lib-card-header,
   .lib-code-block,
@@ -589,6 +597,7 @@ const user = Astro.locals.user;
   .badge-personal { background: rgba(59, 130, 246, 0.1); color: #93c5fd; border-color: rgba(59, 130, 246, 0.2); }
   .badge-selling { background: rgba(245, 158, 11, 0.1); color: #fcd34d; border-color: rgba(245, 158, 11, 0.2); }
   .badge-both { background: rgba(16, 185, 129, 0.1); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.2); }
+  .badge-custom { background: hsla(var(--cat-h, 0), 70%, 60%, 0.1); color: hsla(var(--cat-h, 0), 90%, 75%, 1); border-color: hsla(var(--cat-h, 0), 70%, 60%, 0.2); }
   .badge-price { 
     color: var(--color-text-secondary);
     font-size: 0.85rem;
@@ -1115,32 +1124,34 @@ const user = Astro.locals.user;
   }
 
   function renderTabs() {
-    const tabsContainer = document.getElementById('filterTabs');
-    if (!tabsContainer) return;
+    const selectEl = document.getElementById('filterSelect');
+    if (!selectEl) return;
     
     // Get unique categories, ignore empty/null
     const categories = Array.from(new Set(prompts.map(p => p.category).filter(Boolean))).sort();
     
-    tabsContainer.innerHTML = '';
+    selectEl.innerHTML = '';
     
-    // 'All' Tab
-    const btnAll = document.createElement('button');
-    btnAll.className = `tab ${currentFilter === 'all' ? 'active' : ''}`;
-    btnAll.dataset.filter = 'all';
-    btnAll.innerHTML = `All <span class="count">${prompts.length}</span>`;
-    btnAll.onclick = () => { currentFilter = 'all'; render(); };
-    tabsContainer.appendChild(btnAll);
+    // 'All' Option
+    const optAll = document.createElement('option');
+    optAll.value = 'all';
+    optAll.textContent = `All (${prompts.length})`;
+    selectEl.appendChild(optAll);
 
-    // Dynamic Category Tabs
+    // Dynamic Category Options
     categories.forEach(cat => {
-      const btn = document.createElement('button');
-      btn.className = `tab ${currentFilter === cat ? 'active' : ''}`;
-      btn.dataset.filter = cat;
+      const opt = document.createElement('option');
+      opt.value = cat;
       const count = prompts.filter(p => p.category === cat).length;
-      btn.innerHTML = `${cat} <span class="count">${count}</span>`;
-      btn.onclick = () => { currentFilter = cat; render(); };
-      tabsContainer.appendChild(btn);
+      opt.textContent = `${cat} (${count})`;
+      selectEl.appendChild(opt);
     });
+    
+    selectEl.value = currentFilter;
+    selectEl.onchange = (e) => {
+      currentFilter = e.target.value;
+      render();
+    };
     
     // Update Datalist in the Add Modal
     const datalist = document.getElementById('categoryList');
@@ -1220,9 +1231,23 @@ const user = Astro.locals.user;
     const badges = document.createElement('div');
     badges.className = 'lib-card-badges';
     const catBadge = document.createElement('span');
-    const catClass = (p.category || 'personal').toLowerCase();
-    catBadge.className = `badge badge-${catClass}`;
-    catBadge.textContent = p.category || 'Uncategorized';
+    const catRaw = p.category || 'Uncategorized';
+    const catClass = catRaw.toLowerCase();
+    
+    const isKnown = ['personal', 'selling', 'both'].includes(catClass);
+    if (!isKnown) {
+      let hash = 0;
+      for (let i = 0; i < catClass.length; i++) {
+        hash = catClass.charCodeAt(i) + ((hash << 5) - hash);
+      }
+      card.style.setProperty('--cat-h', Math.abs(hash) % 360);
+      card.classList.add('cat-custom');
+      catBadge.className = `badge badge-custom`;
+    } else {
+      card.classList.add(`cat-${catClass}`);
+      catBadge.className = `badge badge-${catClass}`;
+    }
+    catBadge.textContent = catRaw;
     badges.appendChild(catBadge);
     if (p.example) {
       const exBadge = document.createElement('span');
@@ -1704,6 +1729,14 @@ const user = Astro.locals.user;
       exCopyBtn.onclick = () => copyText(p.example, exCopyBtn);
     } else {
       exWrap.style.display = 'none';
+    }
+    
+    const noteWrap = document.getElementById('viewPromptNoteWrap');
+    if (p.price) {
+      noteWrap.style.display = 'block';
+      document.getElementById('viewPromptNoteContent').textContent = p.price;
+    } else {
+      noteWrap.style.display = 'none';
     }
     
     const tagsWrap = document.getElementById('viewPromptTagsWrap');

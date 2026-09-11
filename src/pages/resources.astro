@@ -78,6 +78,22 @@ const jsonLd = {
   <Header slot="header" />
 
   <main id="resources-main">
+    <!-- WIP Aesthetic Page -->
+    <section class="wip-container container">
+      <div class="wip-content glass-card">
+        <div class="wip-illustration">
+          <svg viewBox="0 0 200 200" width="100%" height="100%" class="animated-svg">
+            <circle cx="100" cy="100" r="80" fill="none" stroke="var(--color-accent-primary)" stroke-width="4" stroke-dasharray="10 20" class="spin-circle" />
+            <path d="M60 100 L90 130 L140 70" fill="none" stroke="var(--color-accent-emerald)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" class="draw-check" />
+          </svg>
+        </div>
+        <h1 class="wip-title">Coming Soon</h1>
+        <p class="wip-subtitle">We're curating the ultimate knowledge library for creators. The Resources hub will be live shortly.</p>
+        <div class="wip-glow"></div>
+      </div>
+    </section>
+
+    <!-- ORIGINAL CONTENT COMMENTED OUT FOR REVIVAL
     <section class="page-hero container">
       <h1 class="page-hero__title">The Creator's Resource Hub</h1>
       <p class="page-hero__subtitle">
@@ -139,6 +155,7 @@ const jsonLd = {
         }
       </div>
     </div>
+    -->
   </main>
 
   <ImagePreviewExperiment />
@@ -162,6 +179,75 @@ const jsonLd = {
 </script>
 
 <style>
+  .wip-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: calc(var(--header-height, 80px) + var(--space-4)) var(--space-4) var(--space-8);
+    box-sizing: border-box;
+  }
+  .wip-content {
+    text-align: center;
+    padding: var(--space-12) var(--space-8);
+    max-width: 600px;
+    border-radius: var(--radius-2xl);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--color-border-subtle);
+  }
+  .wip-illustration {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto var(--space-6);
+    position: relative;
+    z-index: 2;
+  }
+  .spin-circle {
+    transform-origin: center;
+    animation: spin 8s linear infinite;
+  }
+  .draw-check {
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: draw 2s ease-in-out forwards infinite alternate;
+  }
+  @keyframes spin {
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes draw {
+    100% { stroke-dashoffset: 0; }
+  }
+  .wip-title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 0%, var(--color-accent-primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: var(--space-4);
+    position: relative;
+    z-index: 2;
+  }
+  .wip-subtitle {
+    font-size: var(--text-lg);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    position: relative;
+    z-index: 2;
+  }
+  .wip-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    background: var(--color-accent-primary);
+    opacity: 0.15;
+    filter: blur(80px);
+    border-radius: 50%;
+    z-index: 1;
+  }
   .page-hero {
     padding: 120px var(--space-4) var(--space-8);
     text-align: center;
