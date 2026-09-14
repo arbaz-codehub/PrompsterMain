@@ -1,0 +1,651 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import { Image } from "astro:assets";
+
+import { supabase } from "../../lib/supabase";
+
+const { slug } = Astro.params;
+
+const siteUrl = import.meta.env.SITE_URL || "https://www.prompster.shop";
+
+const { data: pack, error } = await supabase
+  .from("marketplace_items")
+  .select("*")
+  .eq("slug", slug)
+  .single();
+
+if (error || !pack) {
+  return Astro.redirect("/404");
+}
+
+const { data: relatedItems } = await supabase
+  .from("marketplace_items")
+  .select("*")
+  .order("created_at", { ascending: false });
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: pack.title,
+  description: pack.detailed_description || pack.description,
+  image: pack.image_url,
+  offers: {
+    "@type": "Offer",
+    price: pack.price,
+    priceCurrency: "INR",
+    availability: "https://schema.org/InStock",
+  }
+};
+---
+
+<BaseLayout
+  title={`${pack.title} — Prompster Marketplace`}
+  description={pack.description}
+  canonicalUrl={`${siteUrl}/pack/${pack.slug}`}
+>
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify(jsonLd)}
+    slot="head"
+  />
+  <Header slot="header" />
+
+  <main id="pack-main" class="container pack-container">
+    <div class="pack-back">
+      <a href="/marketplace" class="pack-back__link">← Back to Marketplace</a>
+    </div>
+
+    <div class="pack-layout">
+      <!-- Left Column: Visuals (Cover) -->
+      <div class="pack-gallery__main">
+        {pack.image_url ? (
+          <Image
+            src={pack.image_url}
+            alt={pack.title}
+            width={800}
+            height={450}
+            class="pack-gallery__img"
+            loading="eager"
+          />
+        ) : (
+          <div class="pack-gallery__placeholder">No Image</div>
+        )}
+      </div>
+
+      <!-- Right Column: Details & Checkout -->
+      <div class="pack-details-wrapper">
+        <div class="pack-details">
+          <div class="pack-details__meta">
+            <span class="pack-tag">{pack.tag}</span>
+          </div>
+          
+          <h1 class="pack-title">{pack.title}</h1>
+          <p class="pack-subtitle">{pack.description}</p>
+          
+          <div class="pack-price">
+            ₹{pack.price}
+          </div>
+
+          <div class="pack-action">
+            {pack.status === "live" ? (
+              <a href={pack.link || "#"} class="btn btn--primary pack-buy-btn" style="text-decoration: none; display: flex; justify-content: center; align-items: center;">
+                Buy Now
+              </a>
+            ) : (
+              <button class="btn pack-buy-btn-disabled" disabled>Coming Soon</button>
+            )}
+            <div class="pack-secure-badge">
+              <span class="secure-icon">🔒</span>
+              Secure & Private Checkout
+            </div>
+          </div>
+
+          <div class="pack-description">
+            <h3>About this Pack</h3>
+            <p>{pack.detailed_description}</p>
+          </div>
+
+          {pack.why_not_buy && pack.why_not_buy.length > 0 && (
+            <div class="pack-marketing">
+              <h3>Why you should <span class="text-highlight">NOT</span> buy this?</h3>
+              <ul class="marketing-list">
+                {pack.why_not_buy.map((reason) => (
+                  <li>
+                    <span class="list-icon">❌</span>
+                    {reason}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <!-- Screenshots Container (Order 3 on mobile) -->
+      {pack.screenshots && pack.screenshots.length > 0 && (
+        <div class="pack-gallery__screenshots-container">
+          <h3 class="pack-gallery__title">Screenshots of the pack</h3>
+          <div class="pack-screenshot-viewer">
+            <img src={pack.screenshots[0]} alt="Screenshot Viewer" class="pack-screenshot-viewer__img" />
+          </div>
+          <div class="pack-carousel">
+            <button class="pack-carousel__btn prev" aria-label="Previous screenshots">‹</button>
+            <div class="pack-carousel__track">
+              {pack.screenshots.map((img, index) => (
+                <div class="pack-screenshot-wrapper" data-full-src={img}>
+                  <Image
+                    src={img}
+                    alt={`${pack.title} Screenshot ${index + 1}`}
+                    width={160}
+                    height={90}
+                    class="pack-screenshot__img"
+                  />
+                </div>
+              ))}
+            </div>
+            <button class="pack-carousel__btn next" aria-label="Next screenshots">›</button>
+          </div>
+        </div>
+      )}
+    </div>
+
+    <!-- Related Packs -->
+    <section class="pack-related">
+      <h2 class="pack-related__title">More packs like that</h2>
+      <div class="pack-related__grid">
+        {relatedItems && relatedItems.filter(i => i.slug !== pack.slug).slice(0, 3).map((item) => (
+          <article class="pack-related-card">
+            <a href={item.slug ? `/pack/${item.slug}` : (item.link || "#")} class="pack-related-card__link">
+              <div class="pack-related-card__cover">
+                {item.image_url ? (
+                  <Image
+                    src={item.image_url}
+                    alt={item.title}
+                    width={400}
+                    height={225}
+                    class="pack-related-card__img"
+                  />
+                ) : (
+                  <div class="pack-related-card__placeholder">No Image</div>
+                )}
+              </div>
+              <div class="pack-related-card__content">
+                <span class="pack-tag">{item.tag}</span>
+                <h3 class="pack-related-card__title">{item.title}</h3>
+                <div class="pack-related-card__price">₹{item.price}</div>
+              </div>
+            </a>
+          </article>
+        ))}
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style is:global>
+  .pack-container {
+    padding-top: var(--space-8);
+    padding-bottom: var(--space-16);
+  }
+
+  .pack-back {
+    margin-bottom: var(--space-8);
+  }
+
+  .pack-back__link {
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color var(--transition-fast);
+    font-size: var(--text-sm);
+  }
+
+  .pack-back__link:hover {
+    color: var(--color-accent-primary);
+  }
+
+  /* 2-Column Layout Grid */
+  .pack-layout {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: var(--space-12);
+    align-items: start;
+    min-width: 0;
+  }
+
+  .pack-gallery__main {
+    grid-column: 1;
+    grid-row: 1;
+    width: 100%;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-elevated);
+    aspect-ratio: 16/9;
+    margin-top: 6px;
+  }
+
+  .pack-details-wrapper {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    position: sticky;
+    top: 100px; /* Offset for sticky header */
+  }
+
+  .pack-gallery__screenshots-container {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .pack-gallery__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .pack-gallery__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: var(--text-lg);
+  }
+
+  .pack-gallery__title {
+    font-size: var(--text-xl);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    margin-top: var(--space-8);
+    margin-bottom: var(--space-4);
+    color: var(--color-text-primary);
+  }
+
+  .pack-screenshot-viewer {
+    width: 100%;
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-elevated);
+    aspect-ratio: 16/9;
+    margin-bottom: var(--space-4);
+  }
+
+  .pack-screenshot-viewer__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .pack-carousel {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    background: var(--color-bg-elevated);
+    padding: var(--space-3);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border-subtle);
+    min-width: 0;
+  }
+
+  .pack-carousel__btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--color-bg-tertiary);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+  }
+
+  .pack-carousel__btn:hover {
+    background: var(--color-bg-primary);
+    border-color: var(--color-border-hover);
+  }
+
+  .pack-carousel__track {
+    display: flex;
+    gap: var(--space-3);
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .pack-carousel__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pack-screenshot-wrapper {
+    flex: 0 0 calc((100% - (3 * var(--space-3))) / 4);
+    aspect-ratio: 16/9;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color var(--transition-fast);
+  }
+
+  .pack-screenshot-wrapper:hover,
+  .pack-screenshot-wrapper.active {
+    border-color: var(--color-accent-primary);
+  }
+
+  .pack-screenshot__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Details Panel */
+  .pack-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .pack-details__meta {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .pack-tag {
+    display: inline-block;
+    padding: var(--space-1) var(--space-3);
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-primary);
+    border-radius: var(--radius-full);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    align-self: flex-start;
+  }
+
+  .pack-title {
+    font-size: var(--text-4xl);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--color-text-primary);
+  }
+
+  .pack-subtitle {
+    font-size: var(--text-lg);
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+  }
+
+  .pack-price {
+    font-size: var(--text-4xl);
+    font-family: var(--font-heading);
+    font-weight: 800;
+    color: var(--color-accent-emerald);
+    margin-top: var(--space-2);
+  }
+
+  .pack-action {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .pack-buy-btn {
+    width: 100%;
+    padding: var(--space-4);
+    font-size: var(--text-lg);
+    font-weight: 700;
+    text-align: center;
+    border-radius: var(--radius-lg);
+    background: var(--color-accent-primary);
+    color: var(--color-bg-primary);
+    border: none;
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .pack-buy-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+  }
+
+  .pack-buy-btn-disabled {
+    width: 100%;
+    padding: var(--space-4);
+    font-size: var(--text-lg);
+    font-weight: 700;
+    text-align: center;
+    border-radius: var(--radius-lg);
+    background: var(--color-bg-elevated);
+    color: var(--color-text-muted);
+    border: 1px dashed var(--color-border-subtle);
+    cursor: not-allowed;
+  }
+
+  .pack-secure-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    color: var(--color-text-tertiary);
+    font-size: var(--text-sm);
+  }
+
+  .secure-icon {
+    font-size: 1rem;
+  }
+
+  /* Sections */
+  .pack-description h3, .pack-marketing h3 {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    margin-bottom: var(--space-3);
+    color: var(--color-text-primary);
+    font-family: var(--font-heading);
+  }
+
+  .pack-description p {
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    font-size: var(--text-base);
+  }
+
+  .pack-marketing {
+    background: var(--color-bg-elevated);
+    padding: var(--space-6);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border-subtle);
+  }
+
+  .text-highlight {
+    color: var(--color-accent-rose);
+  }
+
+  .marketing-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .marketing-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    color: var(--color-text-secondary);
+    font-size: var(--text-base);
+    line-height: 1.5;
+  }
+
+  .list-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* Related Packs */
+  .pack-related {
+    margin-top: var(--space-20);
+    padding-top: var(--space-12);
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  .pack-related__title {
+    font-size: var(--text-2xl);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    margin-bottom: var(--space-8);
+    color: var(--color-text-primary);
+  }
+
+  .pack-related__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-6);
+  }
+
+  .pack-related-card {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    transition: transform var(--transition-fast), border-color var(--transition-fast);
+  }
+
+  .pack-related-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-border-hover);
+  }
+
+  .pack-related-card__link {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .pack-related-card__cover {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: var(--color-bg-tertiary);
+  }
+
+  .pack-related-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .pack-related-card__content {
+    padding: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    flex: 1;
+  }
+
+  .pack-related-card__title {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  .pack-related-card__price {
+    font-size: var(--text-lg);
+    font-weight: 800;
+    color: var(--color-accent-emerald);
+    margin-top: auto;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 992px) {
+    .pack-layout {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-8);
+    }
+    
+    .pack-gallery__main { order: 1; }
+    
+    .pack-details-wrapper {
+      order: 2;
+      position: static;
+      width: 100%;
+    }
+    
+    .pack-gallery__screenshots-container { order: 3; }
+  }
+
+  @media (max-width: 640px) {
+    .pack-container {
+      padding-top: var(--space-4);
+      padding-bottom: var(--space-8);
+    }
+    .pack-title {
+      font-size: var(--text-3xl);
+    }
+    .pack-screenshot-wrapper {
+      flex: 0 0 calc((100% - (1 * var(--space-3))) / 2.5);
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const track = document.querySelector('.pack-carousel__track');
+    const prevBtn = document.querySelector('.pack-carousel__btn.prev');
+    const nextBtn = document.querySelector('.pack-carousel__btn.next');
+    const viewerImg = document.querySelector('.pack-screenshot-viewer__img');
+    const wrappers = document.querySelectorAll('.pack-screenshot-wrapper');
+
+    if (wrappers.length > 0 && viewerImg) {
+      let currentIndex = 0;
+      wrappers[0].classList.add('active');
+      
+      const updateViewer = (index) => {
+        wrappers.forEach(w => w.classList.remove('active'));
+        wrappers[index].classList.add('active');
+        const fullSrc = wrappers[index].getAttribute('data-full-src');
+        if (fullSrc) viewerImg.src = fullSrc;
+        wrappers[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      };
+
+      wrappers.forEach((wrapper, index) => {
+        wrapper.addEventListener('click', () => {
+          currentIndex = index;
+          updateViewer(currentIndex);
+        });
+      });
+
+      if (prevBtn && nextBtn) {
+        prevBtn.addEventListener('click', () => {
+          currentIndex = (currentIndex > 0) ? currentIndex - 1 : wrappers.length - 1;
+          updateViewer(currentIndex);
+        });
+        nextBtn.addEventListener('click', () => {
+          currentIndex = (currentIndex < wrappers.length - 1) ? currentIndex + 1 : 0;
+          updateViewer(currentIndex);
+        });
+      }
+    }
+  });
+</script>

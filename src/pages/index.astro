@@ -263,9 +263,97 @@ const skeletonHeights = Array.from({ length: 12 }).map(() => {
       sessionStorage.setItem("gallery_loaded", "true");
     }
 
-    // Show grid immediately. Cards have their own individual shimmering skeletons and min-heights 
-    // so they won't collapse, giving a much faster perceived load time.
-    showGrid();
+    let observer;
+    if (!noMore && sentinel) {
+      let loading = false;
+      observer = new IntersectionObserver(
+        async (entries) => {
+          const entry = entries[0];
+          if (entry.isIntersecting && !loading && !noMore) {
+            loading = true;
+            page++;
+            try {
+              let apiUrl = `/api/prompts?page=${page}&limit=12`;
+              if (activeCategory === "personalized" && preferences) {
+                apiUrl += `&feed=personalized&preferences=${encodeURIComponent(preferences.join(","))}`;
+              } else if (activeCategory !== "all" && activeCategory !== "personalized") {
+                apiUrl += `&category=${activeCategory}`;
+              }
+              const response = await fetch(apiUrl);
+              const result = await response.json();
+              if (result.data && result.data.length > 0) {
+                let currentCount = grid.children.length;
+                const fragment = document.createDocumentFragment();
+                result.data.forEach((prompt) => {
+                  const card = document.createElement("a");
+                  card.setAttribute('data-index', currentCount++);
+                  card.href = `/prompt/${prompt.slug}`;
+                  card.className = "prompt-card animate-fade-in-up";
+                  card.id = `card-${prompt.id}`;
+                  card.setAttribute("data-astro-prefetch", "hover");
+                  const imgUrl = prompt.images[0] || "https://picsum.photos/seed/default/800/600";
+                  const tagsHtml = prompt.tags ? prompt.tags.slice(0, 3).map((tag) => `<span class="tag-badge">#${tag}</span>`).join("") : "";
+                  card.innerHTML = `
+                    <div class="prompt-card__image-wrap skeleton">
+                      <img src="${imgUrl}" alt="${prompt.title}" class="prompt-card__image" decoding="async" loading="lazy" style="view-transition-name: img-${prompt.id}; opacity: 0; transition: opacity 0.15s ease-out;" onload="this.style.opacity = 1; this.parentElement.classList.remove('skeleton');" />
+                      <div class="prompt-card__top-actions">
+                        <button class="favorite-btn" data-prompt-id="${prompt.id}" aria-label="Save to Favourites">
+                          <svg class="heart-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                          </svg>
+                        </button>
+                      </div>
+                      <div class="prompt-card__overlay">
+                        <span class="prompt-card__category">${prompt.category || ""}</span>
+                        <h3 class="prompt-card__title">${prompt.title || ""}</h3>
+                        <div class="prompt-card__tags">${tagsHtml}</div>
+                      </div>
+                    </div>
+                  `;
+                  fragment.appendChild(card);
+                });
+                grid.appendChild(fragment);
+                applyMasonryOrder();
+                if (typeof window.initFavourites === 'function') window.initFavourites();
+                sessionStorage.setItem(`gallery_html_${activeCategory}`, grid.innerHTML);
+                sessionStorage.setItem(`gallery_page_${activeCategory}`, page.toString());
+              }
+              if (!result.hasMore) {
+                noMore = true;
+                sentinel.style.display = "none";
+                if (endMessage) {
+                  endMessage.style.display = "flex";
+                  endMessage.innerHTML = `<p style="color: var(--color-text-tertiary); font-size: var(--text-sm);">✨ You've seen all ${result.total} prompts</p>`;
+                }
+                if (observer) observer.disconnect();
+              }
+            } catch (err) {
+              console.error("Failed to load more prompts:", err);
+            }
+            loading = false;
+          }
+        },
+        { rootMargin: "400px" },
+      );
+    }
+
+    function showGrid() {
+      skeletonGrid.style.display = "none";
+      grid.style.display = "block";
+      
+      // Apply masonry logic after grid is block but before it becomes visible
+      applyMasonryOrder();
+
+      void grid.offsetWidth; // Trigger reflow
+      grid.style.opacity = "1";
+
+      if (sentinel && !noMore) {
+        sentinel.style.display = "flex";
+        if (observer) observer.observe(sentinel);
+      }
+
+      sessionStorage.setItem("gallery_loaded", "true");
+    }
 
     // Assign true chronological index so we never lose track during sorting
     Array.from(grid.children).forEach((child, i) => {
@@ -304,129 +392,24 @@ const skeletonHeights = Array.from({ length: 12 }).map(() => {
     }
 
     // Apply immediately and on resize
-    applyMasonryOrder();
     window.addEventListener('resize', applyMasonryOrder);
 
-    // Infinite scroll
-    if (!noMore) {
-      let loading = false;
-
-      if (sentinel) {
-        const observer = new IntersectionObserver(
-          async (entries) => {
-            const entry = entries[0];
-            if (entry.isIntersecting && !loading && !noMore) {
-              loading = true;
-              page++;
-
-              // Show loading state on sentinel if desired, but fetch is usually fast
-              try {
-                let apiUrl = `/api/prompts?page=${page}&limit=12`;
-                if (activeCategory === "personalized" && preferences) {
-                  apiUrl += `&feed=personalized&preferences=${encodeURIComponent(preferences.join(","))}`;
-                } else if (
-                  activeCategory !== "all" &&
-                  activeCategory !== "personalized"
-                ) {
-                  apiUrl += `&category=${activeCategory}`;
-                }
-
-                const response = await fetch(apiUrl);
-                const result = await response.json();
-
-                if (result.data && result.data.length > 0) {
-                  let currentCount = grid.children.length;
-                  const fragment = document.createDocumentFragment();
-                  result.data.forEach((prompt) => {
-                    const card = document.createElement("a");
-                    card.setAttribute('data-index', currentCount++);
-                    card.href = `/prompt/${prompt.slug}`;
-                    card.className = "prompt-card animate-fade-in-up";
-                    card.id = `card-${prompt.id}`;
-                    card.setAttribute("data-astro-prefetch", "hover"); // Dynamic prefetch
-
-                    const imgUrl =
-                      prompt.images[0] ||
-                      "https://picsum.photos/seed/default/800/600";
-                    const tagsHtml = prompt.tags
-                      ? prompt.tags
-                          .slice(0, 3)
-                          .map(
-                            (tag) => `<span class="tag-badge">#${tag}</span>`,
-                          )
-                          .join("")
-                      : "";
-
-                    // When image loads, just remove skeleton
-                    card.innerHTML = `
-                      <div class="prompt-card__image-wrap skeleton">
-                        <img src="${imgUrl}" alt="${prompt.title}" class="prompt-card__image" decoding="async" loading="lazy" style="view-transition-name: img-${prompt.id}; opacity: 0; transition: opacity 0.15s ease-out;" onload="this.style.opacity = 1; this.parentElement.classList.remove('skeleton');" />
-                        
-                        <div class="prompt-card__top-actions">
-                          <button class="favorite-btn" data-prompt-id="${prompt.id}" aria-label="Save to Favourites">
-                            <svg class="heart-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                          </button>
-                        </div>
-
-                        <div class="prompt-card__overlay">
-                          <span class="prompt-card__category">${prompt.category || ""}</span>
-                          <h3 class="prompt-card__title">${prompt.title || ""}</h3>
-                          <div class="prompt-card__tags">
-                            ${tagsHtml}
-                          </div>
-                        </div>
-                      </div>
-                    `;
-                    fragment.appendChild(card);
-                  });
-                  grid.appendChild(fragment);
-
-                  // Re-apply mathematical sorting so new items fall into the correct columns
-                  applyMasonryOrder();
-
-                  // Bind favourite buttons for newly appended cards
-                  if (typeof window.initFavourites === 'function') {
-                    window.initFavourites();
-                  }
-
-                  // Cache the updated DOM state for instant back navigation
-                  sessionStorage.setItem(
-                    `gallery_html_${activeCategory}`,
-                    grid.innerHTML,
-                  );
-                  sessionStorage.setItem(
-                    `gallery_page_${activeCategory}`,
-                    page.toString(),
-                  );
-                }
-
-                if (!result.hasMore) {
-                  noMore = true;
-                  sentinel.style.display = "none";
-                  if (endMessage) {
-                    endMessage.style.display = "flex";
-                    endMessage.innerHTML = `
-                      <p style="color: var(--color-text-tertiary); font-size: var(--text-sm);">
-                        ✨ You've seen all ${result.total} prompts
-                      </p>
-                    `;
-                  }
-                  observer.disconnect();
-                }
-              } catch (err) {
-                console.error("Failed to load more prompts:", err);
-              }
-
-              loading = false;
-            }
-          },
-          { rootMargin: "400px" },
-        );
-
-        observer.observe(sentinel);
-      }
+    // Wait for all initially visible eager images to load before showing grid
+    const eagerImages = Array.from(grid.querySelectorAll('img[loading="eager"]'));
+    if (isBackNav || eagerImages.length === 0) {
+      showGrid();
+    } else {
+      Promise.all(
+        eagerImages.map((img) => {
+          if (img.complete) return Promise.resolve();
+          return new Promise((resolve) => {
+            img.addEventListener("load", resolve);
+            img.addEventListener("error", resolve);
+          });
+        })
+      ).then(() => {
+        showGrid();
+      });
     }
   }
 

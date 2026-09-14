@@ -21,7 +21,7 @@ const supabase = createSupabaseClient(Astro.cookies, Astro.request);
 
 let packData = null;
 if (prompt.pack_id) {
-  const { data } = await supabase.from('marketplace_items').select('title, image_url').eq('id', prompt.pack_id).single();
+  const { data } = await supabase.from('marketplace_items').select('title, image_url, slug, link').eq('id', prompt.pack_id).single();
   if (data) {
     packData = data;
   }
@@ -289,20 +289,20 @@ if (prompt.seoDescription) {
         </div>
 
         <!-- EXPERIMENT: Marketplace Pack Link -->
-        {prompt.pack_id && (
+        {prompt.pack_id && packData && (
           <div class="prompt-pack-card">
-            <div class="prompt-pack-card__image-wrap preview-trigger" data-preview={prompt.pack_image_url}>
-              {prompt.pack_image_url ? (
-                <img src={prompt.pack_image_url} alt={prompt.pack_title || 'Marketplace Pack'} class="prompt-pack-card__image" />
+            <div class="prompt-pack-card__image-wrap preview-trigger" data-preview={packData.image_url || prompt.pack_image_url}>
+              {(packData.image_url || prompt.pack_image_url) ? (
+                <img src={packData.image_url || prompt.pack_image_url} alt={packData.title || prompt.pack_title || 'Marketplace Pack'} class="prompt-pack-card__image" />
               ) : (
                 <div class="prompt-pack-card__placeholder">📦</div>
               )}
             </div>
             <div class="prompt-pack-card__content">
               <span class="prompt-pack-card__label">Part of Marketplace Pack</span>
-              <h4 class="prompt-pack-card__title">{prompt.pack_title || 'Premium Collection'}</h4>
+              <h4 class="prompt-pack-card__title">{packData.title || prompt.pack_title || 'Premium Collection'}</h4>
             </div>
-            <a href={`/packs/${prompt.pack_id}`} class="btn btn--primary btn--sm prompt-pack-card__btn" style="white-space: nowrap; flex-shrink: 0;" data-astro-prefetch="hover">View Pack &rarr;</a>
+            <a href={packData.slug ? `/pack/${packData.slug}` : (packData.link || "#")} class="btn btn--primary btn--sm prompt-pack-card__btn" style="white-space: nowrap; flex-shrink: 0;" data-astro-prefetch="hover">View Pack &rarr;</a>
           </div>
         )}
         <!-- END EXPERIMENT -->

@@ -11,15 +11,17 @@ const { targetGrid, itemClass, titleClass, descClass, tagClass } = Astro.props;
 ---
 
 <div class="smart-filter" data-target={targetGrid} data-item={itemClass} data-title={titleClass} data-desc={descClass} data-tag={tagClass}>
-  <div class="smart-filter__search-bar">
-    <span class="smart-filter__search-icon">🔍</span>
-    <input type="text" class="smart-filter__search-input" placeholder="Search for tools, prompts, or resources..." aria-label="Search" />
-  </div>
+  <div class="smart-filter__controls">
+    <div class="smart-filter__search-bar">
+      <span class="smart-filter__search-icon">🔍</span>
+      <input type="text" class="smart-filter__search-input" placeholder="Search for tools, prompts, or resources..." aria-label="Search" />
+    </div>
 
-  <div class="smart-filter__tags-scroll">
-    <div class="smart-filter__tags-container">
-      <button class="smart-filter__tag-btn active" data-filter="all">All</button>
-      <!-- Dynamic tags injected here -->
+    <div class="smart-filter__category-select-wrapper">
+      <select class="smart-filter__category-select" aria-label="Filter by category">
+        <option value="all">All Categories</option>
+      </select>
+      <div class="smart-filter__select-icon">▼</div>
     </div>
   </div>
 
@@ -47,7 +49,7 @@ const { targetGrid, itemClass, titleClass, descClass, tagClass } = Astro.props;
       if (!grid) return;
 
       const searchInput = filterEl.querySelector('.smart-filter__search-input') as HTMLInputElement;
-      const tagsContainer = filterEl.querySelector('.smart-filter__tags-container');
+      const categorySelect = filterEl.querySelector('.smart-filter__category-select') as HTMLSelectElement;
       const emptyState = filterEl.querySelector('.smart-filter__empty-state') as HTMLElement;
       
       const items = Array.from(grid.querySelectorAll(itemClass)) as HTMLElement[];
@@ -61,23 +63,18 @@ const { targetGrid, itemClass, titleClass, descClass, tagClass } = Astro.props;
         }
       });
 
-      // Render dynamic tags
-      if (tagsContainer && uniqueTags.size > 0) {
-        // Keep the "All" button
-        const allBtn = tagsContainer.querySelector('[data-filter="all"]');
-        tagsContainer.innerHTML = '';
-        if (allBtn) tagsContainer.appendChild(allBtn);
-
+      // Render dynamic options
+      if (categorySelect && uniqueTags.size > 0) {
+        categorySelect.innerHTML = '<option value="all">All Categories</option>';
         Array.from(uniqueTags).sort().forEach(tag => {
-          const btn = document.createElement('button');
-          btn.className = 'smart-filter__tag-btn';
-          btn.textContent = tag;
-          btn.setAttribute('data-filter', tag.toLowerCase());
-          tagsContainer.appendChild(btn);
+          const opt = document.createElement('option');
+          opt.value = tag.toLowerCase();
+          opt.textContent = tag;
+          categorySelect.appendChild(opt);
         });
-      } else if (tagsContainer) {
-        // If no tags found (or only empty ones), hide the tag container
-        (tagsContainer.parentElement as HTMLElement).style.display = 'none';
+      } else if (categorySelect) {
+        // If no tags found (or only empty ones), hide the select wrapper
+        (categorySelect.parentElement as HTMLElement).style.display = 'none';
       }
 
       let currentSearch = '';
@@ -124,16 +121,9 @@ const { targetGrid, itemClass, titleClass, descClass, tagClass } = Astro.props;
         });
       }
 
-      if (tagsContainer) {
-        tagsContainer.addEventListener('click', (e) => {
-          const btn = (e.target as HTMLElement).closest('.smart-filter__tag-btn');
-          if (!btn) return;
-
-          // Update active class
-          tagsContainer.querySelectorAll('.smart-filter__tag-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-
-          currentTag = btn.getAttribute('data-filter') || 'all';
+      if (categorySelect) {
+        categorySelect.addEventListener('change', (e) => {
+          currentTag = (e.target as HTMLSelectElement).value;
           applyFilters();
         });
       }
@@ -151,11 +141,19 @@ const { targetGrid, itemClass, titleClass, descClass, tagClass } = Astro.props;
     z-index: 10;
   }
 
+  .smart-filter__controls {
+    display: flex;
+    flex-direction: row;
+    gap: var(--space-4);
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
   .smart-filter__search-bar {
     position: relative;
-    max-width: 600px;
+    flex: 1;
     width: 100%;
-    margin: 0 auto;
   }
 
   .smart-filter__search-icon {
@@ -186,52 +184,53 @@ const { targetGrid, itemClass, titleClass, descClass, tagClass } = Astro.props;
 
   .smart-filter__search-input:focus {
     border-color: var(--color-border-hover);
-    box-shadow: 0 4px 30px rgba(96, 165, 250, 0.15); /* Accent glow */
+    box-shadow: 0 4px 30px rgba(96, 165, 250, 0.15);
     background: rgba(255, 255, 255, 0.05);
   }
 
-  .smart-filter__tags-scroll {
+  .smart-filter__category-select-wrapper {
+    position: relative;
+    width: auto;
+    flex-shrink: 0;
+  }
+
+  .smart-filter__category-select {
     width: 100%;
-    overflow-x: auto;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
-    padding-bottom: var(--space-2);
+    height: 100%;
+    padding: var(--space-4) calc(var(--space-4) * 2.5) var(--space-4) var(--space-4);
+    background: var(--color-bg-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    color: var(--color-text-primary);
+    font-size: var(--text-base);
+    appearance: none;
+    outline: none;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: all var(--transition-fast);
+  }
+
+  .smart-filter__category-select:focus {
+    border-color: var(--color-border-hover);
+    box-shadow: 0 4px 30px rgba(96, 165, 250, 0.15);
+    background: rgba(255, 255, 255, 0.05);
   }
   
-  .smart-filter__tags-scroll::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
-  }
-
-  .smart-filter__tags-container {
-    display: flex;
-    justify-content: center;
-    gap: var(--space-2);
-    flex-wrap: nowrap;
-    min-width: max-content;
-  }
-
-  .smart-filter__tag-btn {
-    padding: var(--space-2) var(--space-4);
+  .smart-filter__category-select option {
     background: var(--color-bg-elevated);
-    border: 1px solid var(--color-border-subtle);
-    border-radius: var(--radius-full);
-    color: var(--color-text-secondary);
-    font-size: var(--text-sm);
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    white-space: nowrap;
-  }
-
-  .smart-filter__tag-btn:hover {
-    background: var(--color-bg-tertiary);
     color: var(--color-text-primary);
   }
 
-  .smart-filter__tag-btn.active {
-    background: var(--color-text-primary);
-    color: var(--color-bg-primary);
-    border-color: var(--color-text-primary);
+  .smart-filter__select-icon {
+    position: absolute;
+    right: var(--space-4);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    pointer-events: none;
   }
 
   .smart-filter__empty-state {
@@ -262,5 +261,18 @@ const { targetGrid, itemClass, titleClass, descClass, tagClass } = Astro.props;
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 640px) {
+    .smart-filter__controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .smart-filter__search-bar {
+      width: 100%;
+    }
+    .smart-filter__category-select-wrapper {
+      width: 100%;
+    }
   }
 </style>

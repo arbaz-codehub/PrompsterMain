@@ -16,45 +16,7 @@ const { data: marketplaceItems } = await supabase
   .select("*")
   .order("created_at", { ascending: false });
 
-const mockItems = [
-  {
-    id: "1",
-    title: "Master AI Portrait Prompts",
-    description:
-      "A comprehensive collection of 500+ portrait prompts for Midjourney v6.",
-    image_url:
-      "https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&q=80&w=800",
-    tag: "Prompt Pack",
-    status: "live",
-    link: "#",
-  },
-  {
-    id: "2",
-    title: "Notion Creator OS",
-    description:
-      "Manage your entire prompt engineering workflow directly inside Notion.",
-    image_url:
-      "https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&q=80&w=800",
-    tag: "Workflow",
-    status: "live",
-    link: "#",
-  },
-  {
-    id: "3",
-    title: "The AI Copywriter",
-    description: "Master prompt framework for generating high-converting copy.",
-    image_url:
-      "https://images.unsplash.com/photo-1455390582262-044cdead27d8?auto=format&fit=crop&q=80&w=800",
-    tag: "Master Prompt",
-    status: "coming_soon",
-    link: "#",
-  },
-];
-
-const items =
-  marketplaceItems && marketplaceItems.length > 0
-    ? marketplaceItems
-    : mockItems;
+const items = marketplaceItems || [];
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -89,13 +51,29 @@ const jsonLd = {
 
     <section class="container mkt-section" aria-label="Marketplace categories">
       <SmartFilter
-        targetGrid=".mkt-grid"
+        targetGrid="#mkt-real-grid"
         itemClass=".mkt-card"
         titleClass=".mkt-card__title"
         descClass=".mkt-card__desc"
         tagClass=".mkt-card__tag"
       />
-      <div class="mkt-grid" role="list">
+
+      <!-- Skeleton Grid -->
+      <div class="mkt-grid mkt-skeleton-grid" id="mkt-skeleton-grid" aria-hidden="true">
+        {Array.from({ length: Math.max(3, items.length) }).map(() => (
+          <article class="mkt-card skeleton" style="pointer-events: none;">
+            <div class="mkt-card__cover skeleton-shimmer" style="width: 100%; height: 100%;"></div>
+            <div class="mkt-card__content" style="gap: 1rem;">
+              <div class="skeleton-shimmer" style="width: 30%; height: 20px; border-radius: 10px;"></div>
+              <div class="skeleton-shimmer" style="width: 80%; height: 24px; border-radius: 4px;"></div>
+              <div class="skeleton-shimmer" style="width: 100%; height: 40px; border-radius: 4px; flex: 1;"></div>
+              <div class="skeleton-shimmer" style="width: 100%; height: 44px; border-radius: 8px;"></div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div class="mkt-grid" id="mkt-real-grid" role="list" style="display: none; opacity: 0; transition: opacity 0.5s ease;">
         {
           items.length > 0 ? (
             items.map((item) => (
@@ -109,6 +87,7 @@ const jsonLd = {
                       height={225}
                       class="mkt-card__img preview-trigger"
                       data-preview={item.image_url}
+                      loading="eager"
                     />
                   ) : (
                     <div class="mkt-card__placeholder">No Image</div>
@@ -124,7 +103,7 @@ const jsonLd = {
                   <footer class="mkt-card__footer">
                     {item.status === "live" ? (
                       <a
-                        href={item.link || "#"}
+                        href={item.slug ? `/pack/${item.slug}` : (item.link || "#")}
                         class="btn btn--primary mkt-card__btn"
                       >
                         View Pack →
@@ -182,6 +161,29 @@ const jsonLd = {
 
 <script>
   document.addEventListener("astro:page-load", () => {
+    const mktGrid = document.getElementById("mkt-real-grid");
+    const skeletonGrid = document.getElementById("mkt-skeleton-grid");
+    
+    if (mktGrid && skeletonGrid) {
+      const images = Array.from(mktGrid.querySelectorAll('img'));
+      const showGrid = () => {
+        skeletonGrid.style.display = "none";
+        mktGrid.style.display = "grid";
+        void mktGrid.offsetWidth;
+        mktGrid.style.opacity = "1";
+        sessionStorage.setItem("mkt_loaded", "true");
+      };
+
+      if (sessionStorage.getItem("mkt_loaded") === "true" || images.length === 0) {
+        showGrid();
+      } else {
+        Promise.all(images.map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(r => { img.addEventListener('load', r); img.addEventListener('error', r); });
+        })).then(showGrid);
+      }
+    }
+
     const form = document.getElementById("notify-form") as HTMLFormElement;
     if (form) {
       form.addEventListener("submit", async (e) => {
@@ -462,6 +464,9 @@ const jsonLd = {
   @media (max-width: 640px) {
     .page-hero {
       padding: 100px var(--space-4) var(--space-6);
+    }
+    .mkt-section {
+      padding: 0 var(--space-4) var(--space-16);
     }
     .mkt-notify__form {
       flex-direction: column;

@@ -76,6 +76,22 @@ const currentPath = Astro.url.pathname;
         });
       });
     }
+
+    // Restore Gallery link to last visited state to make back-navigation feel natural
+    const lastGalleryUrl = sessionStorage.getItem('last_gallery_url');
+    if (lastGalleryUrl && window.location.pathname !== '/') {
+      document.querySelectorAll('a[href="/"]').forEach(link => {
+        // We only override the "Gallery" text links, not the logo (which usually acts as a hard reset)
+        if (!link.classList.contains('site-header__logo')) {
+          link.setAttribute('href', lastGalleryUrl);
+        }
+      });
+    }
+
+    // Save the exact gallery URL when on the gallery page
+    if (window.location.pathname === '/') {
+      sessionStorage.setItem('last_gallery_url', window.location.pathname + window.location.search);
+    }
   });
 </script>
 
