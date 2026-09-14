@@ -282,8 +282,8 @@ if (prompt.seoDescription) {
           </div>
           <div class="prompt-detail__actions">
             <CopyButton text={prompt.content} authRequired={!isLoggedIn} />
-            <button class="btn btn--secondary" id="show-more-prompt-btn" style="display: none; font-size: var(--text-base); padding: var(--space-4) var(--space-8); border-radius: var(--radius-xl); flex: 1; justify-content: center;">
-              <span class="seo-icon" style="margin-right: 6px;">📖</span> View Full Prompt
+            <button class="btn btn--secondary prompt-action-btn" id="show-more-prompt-btn" style="display: none;">
+              <span class="seo-icon" style="margin-right: 6px;">📖</span> Full Prompt
             </button>
           </div>
         </div>
@@ -500,9 +500,37 @@ if (prompt.seoDescription) {
   }
   .prompt-detail__actions {
     display: flex;
-    gap: var(--space-3);
+    justify-content: space-between;
+    gap: var(--space-4);
     margin-top: var(--space-4);
-    align-items: center;
+    width: 100%;
+  }
+  .prompt-detail__actions :global(button) {
+    flex: 0 1 200px; /* Fixed width on desktop */
+    justify-content: center !important;
+    align-items: center !important;
+    height: 48px !important;
+    padding: 0 1.5rem !important;
+    border-radius: var(--radius-xl) !important;
+    font-size: var(--text-base) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+  .prompt-detail__actions :global(.btn) {
+    display: flex; /* Ensures flex works but allows JS inline display: none to override */
+  }
+
+  @media (max-width: 600px) {
+    .prompt-detail__actions {
+      gap: var(--space-2);
+    }
+    .prompt-detail__actions :global(button) {
+      flex: 1 1 0% !important;
+      min-width: 0 !important;
+      padding: 0 0.5rem !important;
+      font-size: var(--text-sm) !important;
+    }
   }
 
   /* Pack Linking Experiment Styles */
@@ -522,7 +550,7 @@ if (prompt.seoDescription) {
     box-shadow: var(--shadow-glow);
   }
   .prompt-pack-card__image-wrap {
-    width: 80px;
+    width: 140px;
     height: 80px;
     border-radius: var(--radius-lg);
     overflow: hidden;
@@ -564,15 +592,27 @@ if (prompt.seoDescription) {
   
   @media (max-width: 600px) {
     .prompt-pack-card {
-      padding: var(--space-3);
-      gap: var(--space-3);
+      flex-direction: column;
+      align-items: stretch;
+      padding: var(--space-4);
+      text-align: center;
     }
     .prompt-pack-card__image-wrap {
-      width: 64px;
-      height: 64px;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16/9;
+      margin-bottom: var(--space-2);
+    }
+    .prompt-pack-card__content {
+      margin-bottom: var(--space-3);
     }
     .prompt-pack-card__title {
       font-size: var(--text-base);
+      white-space: normal;
+    }
+    :global(.prompt-pack-card__btn) {
+      width: 100% !important;
+      justify-content: center;
     }
   }
 </style>
