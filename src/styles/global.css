@@ -1541,7 +1541,6 @@ p {
   border-radius: 50%;
   border: 5px solid var(--color-border);
   border-top-color: var(--color-accent-primary);
-  animation: spinner-dash 1.5s ease-in-out infinite;
 }
 
 @keyframes spinner-rotate {
@@ -1550,17 +1549,4 @@ p {
   }
 }
 
-@keyframes spinner-dash {
-  0% {
-    stroke-dasharray: 1, 200;
-    stroke-dashoffset: 0;
-  }
-  50% {
-    stroke-dasharray: 90, 200;
-    stroke-dashoffset: -35px;
-  }
-  100% {
-    stroke-dasharray: 90, 200;
-    stroke-dashoffset: -124px;
-  }
-}
+

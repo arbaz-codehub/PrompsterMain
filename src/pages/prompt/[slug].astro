@@ -310,7 +310,7 @@ if (prompt.is_hidden) {
           <div class="prompt-pack-card">
             <div class="prompt-pack-card__image-wrap preview-trigger" data-preview={packData.image_url || prompt.pack_image_url}>
               {(packData.image_url || prompt.pack_image_url) ? (
-                <img src={packData.image_url || prompt.pack_image_url} alt={packData.title || prompt.pack_title || 'Marketplace Pack'} class="prompt-pack-card__image" />
+                <img src={packData.image_url || prompt.pack_image_url} alt={packData.title || prompt.pack_title || 'Marketplace Pack'} class="prompt-pack-card__image" loading="eager" fetchpriority="high" decoding="async" />
               ) : (
                 <div class="prompt-pack-card__placeholder">📦</div>
               )}
@@ -463,7 +463,7 @@ if (prompt.is_hidden) {
             <line x1="6" y1="6" x2="18" y2="18"></line>
           </svg>
         </button>
-        <img src="/logo.png" alt="Prompster Logo" style="height: 80px; width: auto; object-fit: contain; margin-bottom: 1.5rem; display: block; margin-left: auto; margin-right: auto;" />
+        <img src="/Prompster_Logo.webp" alt="Prompster Logo" width="83" height="100" style="height: 80px; width: auto; object-fit: contain; margin-bottom: 1.5rem; display: block; margin-left: auto; margin-right: auto;" />
         <h2>Unlock the Prompt</h2>
         <p>Create a free account or log in to view and copy full prompts, save your favorites, and get a personalized feed!</p>
         <a href="/signup" class="btn btn--primary">Sign Up Free</a>

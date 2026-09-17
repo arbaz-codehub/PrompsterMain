@@ -61,14 +61,15 @@ const jsonLd = {
       <!-- Left Column: Visuals (Cover) -->
       <div class="pack-gallery__main">
         {pack.image_url ? (
-          <Image
+          <img
             src={pack.image_url}
             alt={pack.title}
-            width={800}
-            height={450}
+            width="800"
+            height="450"
             class="pack-gallery__img"
             loading="eager"
             fetchpriority="high"
+            decoding="async"
           />
         ) : (
           <div class="pack-gallery__placeholder">No Image</div>
