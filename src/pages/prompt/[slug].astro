@@ -72,6 +72,12 @@ if (prompt.seoDescription) {
   });
   if (inList) parsedSeoDescription += '</ul>\n';
 }
+
+// Security: If the prompt is hidden, completely scrub the actual prompt text from being sent to the client
+if (prompt.is_hidden) {
+  prompt.content = "This prompt is locked. Purchase the pack to view.";
+  prompt.prompts = ["This prompt is locked. Purchase the pack to view."];
+}
 ---
 
 <BaseLayout
@@ -270,22 +276,33 @@ if (prompt.seoDescription) {
 
         <div class="prompt-detail__content-area" style="padding-bottom: 1rem;">
           <div class="prompt-detail__content-label">Prompt</div>
-          <div class="prompt-detail__text-wrapper" id="prompt-text-wrapper">
-            <p 
-              class={`prompt-detail__content-text ${!isLoggedIn ? 'blurred-text auth-trigger' : ''}`} 
-              id="prompt-text-display"
-              style="margin-bottom: 0;"
-            >
-              {prompt.content}
-            </p>
-            <div class="prompt-detail__fade" id="prompt-fade"></div>
-          </div>
-          <div class="prompt-detail__actions">
-            <CopyButton text={prompt.content} authRequired={!isLoggedIn} />
-            <button class="btn btn--secondary prompt-action-btn" id="show-more-prompt-btn" style="display: none;">
-              <span class="seo-icon" style="margin-right: 6px;">📖</span> Full Prompt
-            </button>
-          </div>
+          
+          {prompt.is_hidden ? (
+            <div class="prompt-detail__locked-box" style="background: var(--color-bg-secondary); padding: 3rem 1.5rem; border-radius: var(--radius-lg); text-align: center; border: 1px dashed var(--color-border-subtle); margin-top: 0.5rem; margin-bottom: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <div style="font-size: 3rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">🔒</div>
+              <h3 style="margin-bottom: 0.75rem; color: var(--color-text-primary); font-size: 1.5rem;">Premium Prompt</h3>
+              <p style="color: var(--color-text-secondary); margin-bottom: 0; max-width: 400px; font-size: 0.95rem; line-height: 1.6;">This prompt is exclusive to the <strong>{packData?.title || prompt.pack_title || 'Marketplace Pack'}</strong>. Get the pack to unlock this and many more premium prompts!</p>
+            </div>
+          ) : (
+            <>
+              <div class="prompt-detail__text-wrapper" id="prompt-text-wrapper">
+                <p 
+                  class={`prompt-detail__content-text ${!isLoggedIn ? 'blurred-text auth-trigger' : ''}`} 
+                  id="prompt-text-display"
+                  style="margin-bottom: 0;"
+                >
+                  {prompt.content}
+                </p>
+                <div class="prompt-detail__fade" id="prompt-fade"></div>
+              </div>
+              <div class="prompt-detail__actions">
+                <CopyButton text={prompt.content} authRequired={!isLoggedIn} />
+                <button class="btn btn--secondary prompt-action-btn" id="show-more-prompt-btn" style="display: none;">
+                  <span class="seo-icon" style="margin-right: 6px;">📖</span> Full Prompt
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
         <!-- EXPERIMENT: Marketplace Pack Link -->

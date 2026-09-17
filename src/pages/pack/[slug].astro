@@ -129,7 +129,7 @@ const jsonLd = {
         <div class="pack-gallery__screenshots-container">
           <h3 class="pack-gallery__title">Screenshots of the pack</h3>
           <div class="pack-screenshot-viewer">
-            <img src={pack.screenshots[0]} alt="Screenshot Viewer" class="pack-screenshot-viewer__img" />
+            <img src={pack.screenshots[0]} alt="Screenshot Viewer" class="pack-screenshot-viewer__img" loading="eager" fetchpriority="high" />
           </div>
           <div class="pack-carousel">
             <button class="pack-carousel__btn prev" aria-label="Previous screenshots">‹</button>
@@ -142,6 +142,8 @@ const jsonLd = {
                     width={160}
                     height={90}
                     class="pack-screenshot__img"
+                    loading="eager"
+                    fetchpriority="high"
                   />
                 </div>
               ))}
@@ -167,6 +169,7 @@ const jsonLd = {
                     width={400}
                     height={225}
                     class="pack-related-card__img"
+                    loading="eager"
                   />
                 ) : (
                   <div class="pack-related-card__placeholder">No Image</div>

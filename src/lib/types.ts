@@ -13,6 +13,7 @@ export interface Prompt {
   pack_id?: string;
   pack_title?: string;
   pack_image_url?: string;
+  is_hidden?: boolean;
 }
 
 export interface AnalyticsData {

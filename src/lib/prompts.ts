@@ -268,5 +268,6 @@ function mapDbToPrompt(dbItem: any): Prompt {
     pack_id: dbItem.pack_id,
     pack_title: dbItem.pack_title,
     pack_image_url: dbItem.pack_image_url,
+    is_hidden: dbItem.is_hidden,
   };
 }
