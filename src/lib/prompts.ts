@@ -4,7 +4,7 @@ import { supabase } from './supabase';
 // Simple in-memory cache for fast SSR navigation
 const cache = {
   prompts: null as { data: Prompt[]; timestamp: number } | null,
-  TTL: 60 * 60 * 1000 // 1 hour
+  TTL: 5 * 1000 // 5 seconds (reduced from 1 hour to ensure fresh data)
 };
 
 export async function getPrompts(): Promise<Prompt[]> {
@@ -269,5 +269,8 @@ function mapDbToPrompt(dbItem: any): Prompt {
     pack_title: dbItem.pack_title,
     pack_image_url: dbItem.pack_image_url,
     is_hidden: dbItem.is_hidden,
+    is_sell: dbItem.is_sell,
+    price: dbItem.price,
+    payment_link: dbItem.payment_link,
   };
 }

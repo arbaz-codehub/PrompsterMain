@@ -73,8 +73,12 @@ if (prompt.seoDescription) {
   if (inList) parsedSeoDescription += '</ul>\n';
 }
 
-// Security: If the prompt is hidden, completely scrub the actual prompt text from being sent to the client
-if (prompt.is_hidden) {
+// Security: If the prompt is hidden or sellable, completely scrub the actual prompt text from being sent to the client
+if (prompt.is_sell) {
+  const dummyText = "A highly detailed, cinematic lighting, 8k resolution, photorealistic master piece, octane render, unreal engine 5, volumetrics, ray tracing, sharp focus, vibrant colors, stunning composition, beautiful landscape, breathtaking view, intricate details, trending on artstation, masterpiece, best quality, ultra detailed, hyper realistic, dramatic lighting, epic scene, concept art, digital illustration, volumetric fog, ethereal atmosphere, majestic, award winning photography.";
+  prompt.content = dummyText;
+  prompt.prompts = [dummyText];
+} else if (prompt.is_hidden) {
   prompt.content = "This prompt is locked. Purchase the pack to view.";
   prompt.prompts = ["This prompt is locked. Purchase the pack to view."];
 }
@@ -277,7 +281,27 @@ if (prompt.is_hidden) {
         <div class="prompt-detail__content-area" style="padding-bottom: 1rem;">
           <div class="prompt-detail__content-label">Prompt</div>
           
-          {prompt.is_hidden ? (
+          {prompt.is_sell ? (
+            <div class="prompt-detail__sell-container" style="position: relative; border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); overflow: hidden; background: var(--color-bg-secondary); margin-top: 0.5rem; margin-bottom: 1.5rem; display: flex; flex-direction: column;">
+              
+              <div style="position: relative; padding: 1.5rem; max-height: 140px; overflow: hidden;">
+                <p class="prompt-detail__content-text" style="margin: 0; filter: blur(5px); opacity: 0.4; user-select: none; pointer-events: none; line-height: 1.6;">
+                  {prompt.content}
+                </p>
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 100px; background: linear-gradient(to bottom, transparent, var(--color-bg-secondary)); pointer-events: none;"></div>
+              </div>
+              
+              <div style="padding: 0 1.5rem 2rem 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; background: var(--color-bg-secondary); z-index: 2;">
+                <div style="font-size: 2rem; margin-bottom: 0.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">✨</div>
+                <h3 style="margin-bottom: 0.5rem; color: var(--color-text-primary); font-size: 1.25rem; font-weight: 600;">Premium Prompt</h3>
+                <p style="color: var(--color-text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem; max-width: 320px; line-height: 1.5; margin-top: 0;">Unlock the exact prompt used to create these stunning images.</p>
+                
+                <a href={prompt.payment_link || "#"} target="_blank" rel="noopener noreferrer" class="btn btn--primary" style="padding: 0.875rem 2.5rem; font-size: 1.1rem; border-radius: 9999px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); font-weight: 600; text-decoration: none;">
+                  Unlock for ₹{prompt.price || 0}
+                </a>
+              </div>
+            </div>
+          ) : prompt.is_hidden ? (
             <div class="prompt-detail__locked-box" style="background: var(--color-bg-secondary); padding: 3rem 1.5rem; border-radius: var(--radius-lg); text-align: center; border: 1px dashed var(--color-border-subtle); margin-top: 0.5rem; margin-bottom: 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center;">
               <div style="font-size: 3rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));">🔒</div>
               <h3 style="margin-bottom: 0.75rem; color: var(--color-text-primary); font-size: 1.5rem;">Premium Prompt</h3>

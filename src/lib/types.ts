@@ -14,6 +14,9 @@ export interface Prompt {
   pack_title?: string;
   pack_image_url?: string;
   is_hidden?: boolean;
+  is_sell?: boolean;
+  price?: number;
+  payment_link?: string;
 }
 
 export interface AnalyticsData {
